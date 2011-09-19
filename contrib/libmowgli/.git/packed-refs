@@ -1,0 +1,10 @@
+# pack-refs with: peeled 
+349f2ec663670e0447db0b2184d5d188ad8fcbe2 refs/tags/libmowgli-0.9.90
+63e2af570464e7606f7341fd20e93959f7e26c71 refs/tags/libmowgli-0.9.50
+31fb9c7596ea13990905f077d5b7ae723089513d refs/tags/libmowgli-0.7.1
+49643fbb151306eeb42bbca7694d5dc5bc16545e refs/tags/libmowgli-0.7.0
+5bc26394add04bece65ea75fe08eed2a8a36ce07 refs/tags/libmowgli-0.6.1
+5d04afc6d14173717e38c6192f99e2216b2f1038 refs/tags/libmowgli-0.2.1
+447ed67e5d8f97fc28f9f37789a981baa609d2b0 refs/tags/libmowgli-0.2.0
+10c8b4a72a99b666ff8fbbabad1a49284105ff61 refs/remotes/origin/vs-envvar
+0cf2aacb3a311542aca47f545156b8fc5ac92b4f refs/remotes/origin/master

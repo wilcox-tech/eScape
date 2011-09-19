@@ -1,0 +1,148 @@
+/*
+ * WTConnection.h - Network functionality
+ * General purpose (Originally Auctions)
+ * Wilcox Technologies
+ *
+ * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
+ * License: internal use only
+ */
+
+#ifndef __AUCTIONS_COMMON_NETWORK_CONN_H_
+#define __AUCTIONS_COMMON_NETWORK_CONN_H_
+
+#ifndef NO_SSL
+#	include <openssl/ssl.h>
+#	include <openssl/bio.h>
+#	include <openssl/err.h>
+#endif
+
+#include <Network/WTConnDelegate.h>
+#include <WTDictionary.h>
+#include <Utility.h>
+
+#define Win32 "Windows"
+#define MacOSX "Macintosh"
+#define Unix "X11"
+#define iPhone "iPhone OS"
+
+#define delegate_status(status) \
+	if(this->delegate != NULL)\
+	{\
+		this->delegate->update_status(this,status);\
+	};
+
+/*!
+	@class		WTConnection
+	@brief		Represents a connection to the network.
+	@details	This class abstracts away pretty much all the nasty,
+			disgusting intricacies of both BSD sockets and the
+			cross-platform hate they bring with them.
+
+			The most important abstraction however is the fact that
+			this class can parse URL strings in almost any format
+			and, using them, gain information about whether to use
+			SSL or not and what port number to use.  You can just
+			call connect with any URL string you could type into
+			Midori and it will connect to it.
+
+			It comes with HTTP and FTP for "free".  More protocols
+			may be added later.
+ */
+class WTConnection
+{
+public:
+	/*!
+	@brief		Initialise the connection object.
+	@param		delegate	The delegate object for this connection
+					object.  (Optional.)
+	@result		The connection object is initialised.
+	@note		If "delegate" is NULL, the object will run in the
+			delegateless mode.
+	 */
+	libAPI WTConnection(WTConnDelegate *delegate);
+
+	/*!
+	@brief		Connect to a URL.
+	@param		url		The URL to connect to.
+	@result		true if the connection succeeded; false otherwise.
+	 */
+	libAPI bool connect(const char *url);
+	/*!
+	@brief		Disconnect from present server, if connected.
+	@note		If this object isn't connected, this is a no-op.
+	 */
+	libAPI void disconnect(void);
+
+	/*!
+	@brief		Download from the URL connected to.
+	@param		length	The length of the result. (Out)
+	@result		NULL if there is an error, there is no data, or the
+			object is not connected.  Otherwise, a pointer to
+			the data.
+	 */
+	libAPI char * download(int *length);
+	/*!
+	@brief		Upload data to the URL connected to.
+	@param		data	The data to upload.
+	@param		length	The length of the result. (Out)
+	 */
+	libAPI char * upload(const char *data, int *length);
+
+	/*!
+	@brief		Set a header (HTTP only).
+	@param		header	The name of the header to set.
+	@param		data	The contents of the header to set.  If data is
+				NULL, the header will be cleared / unset.
+	 */
+	libAPI void http_header(const char *header, char *data);
+
+	libAPI ~WTConnection();
+	
+	const char *last_error;
+protected:
+	/*! Whether the connection is active */
+	bool connected;
+	/*! Whether the connection is being established */
+	bool connecting;
+	/*! The delegate object for this connection */
+	WTConnDelegate *delegate;
+	/*! The domain name */
+	char *domain;
+	/*! HTTP headers, if any */
+	WTDictionary *headers;
+	/*! The port number to connect to */
+	int port;
+	/*! Protocol name */
+	char *protocol;
+	/*! The socket */
+	int socket;
+#ifndef NO_SSL
+	/*! SSL context */
+	SSL_CTX *ssl_ctx;
+	/*! SSL socket */
+	BIO *ssl_socket;
+	/*! SSL */
+	SSL *ssl;
+#endif
+	/*! The address information of the domain */
+	struct addrinfo *addr_info;
+	/*! The URI to act on */
+	char *uri;
+private:
+	/*!
+	@brief		Parse a URL string into its respective bits.
+	@param		url		The URL string to parse.
+	@result		The class params are set.
+	 */
+	bool parse_url(const char *url);
+	
+	bool connect_https(void);
+	
+	char *upload_https(const char *data, int *length);
+	char *upload_http(const char *data, int *length);
+	
+	char *download_https(int *length);
+	char *download_http(int *length);
+};
+
+#endif /*!__AUCTIONS_COMMON_NETWORK_CONN_H_*/
