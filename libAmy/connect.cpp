@@ -13,8 +13,9 @@
 #	include <ws2tcpip.h>	// getaddrinfo, freeaddri, gai_strerror
 #endif
 
+#include "connect.h"
+
 #include <Utility.h> // alloc_error
-#include <Network/connect.h>
 #include <string.h> // strcspn, strlen, strncpy
 #include <stdlib.h> // calloc, realloc, free
 #include <stdio.h>  // fprintf, stderr
@@ -419,66 +420,3 @@ WTConnection::~WTConnection()
 		this->protocol = NULL;
 	};
 }
-
-extern "C"
-{
-#ifndef NO_THREADSAFE
-	static mowgli_mutex_t *ssl_lock_group;
-#endif /*!NO_THREADSAFE*/
-
-void amy_ssl_lockback(int mode, int n, const char *file, int line)
-{
-	if(mode & CRYPTO_LOCK)
-		mowgli_mutex_lock(&(ssl_lock_group[n]));
-	else
-		mowgli_mutex_unlock(&(ssl_lock_group[n]));
-}
-	
-void amy_init()
-{
-#ifndef NO_SSL
-	SSL_library_init();
-	SSL_load_error_strings();
-	ERR_load_BIO_strings();
-	OpenSSL_add_all_algorithms();
-#endif /*!NO_SSL*/
-#ifdef WIN32
-	WSADATA wsadata;
-	
-	if(WSAStartup(MAKEWORD(2,0), &wsadata) != 0) abort(); // XXX
-#endif /*WIN32*/
-
-#ifndef NO_THREADSAFE
-	
-	ssl_lock_group = static_cast<mowgli_mutex_t *>(calloc(CRYPTO_num_locks(), sizeof(mowgli_mutex_t)));
-	for(int i = 0; i < CRYPTO_num_locks(); i++)
-		mowgli_mutex_create(&(ssl_lock_group[i]));
-
-	CRYPTO_set_locking_callback(amy_ssl_lockback);
-
-#endif
-}
-
-void amy_clean()
-{
-#ifndef NO_SSL
-	ERR_remove_state(0);
-	ERR_free_strings();
-	EVP_cleanup();
-	CRYPTO_cleanup_all_ex_data();
-#endif
-#ifdef WIN32
-	WSACleanup();
-#endif /*WIN32*/
-
-#ifndef NO_THREADSAFE
-
-	for(int i = 0; i < CRYPTO_num_locks(); i++)
-		mowgli_mutex_destroy(&(ssl_lock_group[i]));
-
-	free(ssl_lock_group);
-#endif
-}
-
-}
-

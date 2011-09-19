@@ -8,7 +8,7 @@
  */
 
 #include "WTDictionary.h"
-#include "Utility.h"
+#include <Utility.h>
 #include <stdlib.h> // NULL, calloc, realloc, free
 #include <string.h> // strlen
 #include <assert.h> // assert

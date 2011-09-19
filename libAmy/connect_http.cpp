@@ -6,9 +6,9 @@
 //  Copyright 2011 Wilcox Technologies LLC. All rights reserved.
 //
 
+#include "connect.h"
+#include <libink/WTDictionary.h>
 #include <Utility.h>
-#include <WTDictionary.h>
-#include <Network/connect.h>
 #include <assert.h>
 
 extern "C"

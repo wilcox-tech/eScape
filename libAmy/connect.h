@@ -16,8 +16,8 @@
 #	include <openssl/err.h>
 #endif
 
-#include <Network/WTConnDelegate.h>
-#include <WTDictionary.h>
+#include "WTConnDelegate.h"
+#include <libink/WTDictionary.h>
 #include <Utility.h>
 
 #define Win32 "Windows"
