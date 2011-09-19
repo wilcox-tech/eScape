@@ -1,0 +1,34 @@
+README for eScape Suite
+Sunday, 18 September 2011
+-------------------------
+
+
+WHO ARE THESE PEOPLE?
+	Amy
+	The HTTP/FTP library.  Provides WTConnection.
+	
+	Chloe
+	CHat Library Of Excellence.
+	
+	Gwen
+	Social networking.  Provides WTTwitter, WTFacebook, etc.
+	
+	ink
+	The glue library, providing common misc things like WTDict and sqlite.
+	
+	Kylie
+	Streaming media (audio/video).  Not very well developed at this point.
+
+
+
+AND THE OTHER DIRECTORIES?
+	build
+	Put your obj files in there.
+	
+	client
+	The actual client code.  There is a separate README in there.
+	
+	contrib
+	Code from other projects that we use here.  Local copies are provided
+	for convenience only, you can (usually) use your system versions instead.
+
