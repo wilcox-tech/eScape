@@ -392,6 +392,10 @@ WTConnection::~WTConnection()
 		delete this->headers;
 	};
 
+#ifndef NO_SSL
+	ERR_remove_state(0);
+#endif
+
 	// This solves a corner case where object deletion leaks -- could happen
 	// if a connection is deleted in the middle of a connect operation and
 	// disconnect code isn't run

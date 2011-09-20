@@ -63,7 +63,6 @@ libAPI void amy_clean()
 #ifndef NO_SSL
 	int i;
 	
-	ERR_remove_state(0);
 	ERR_free_strings();
 	EVP_cleanup();
 	CRYPTO_cleanup_all_ex_data();
