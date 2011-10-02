@@ -190,6 +190,7 @@ bool WTConnection::parse_url(const char *url)
 			alloc_error("uri", length);
 		strncpy(uri, (url + domain_length), length);
 		this->uri[length] = '\0';
+		this->query_string = strchr(uri, static_cast<int>('?'));
 	};
 
 	return true;
@@ -287,13 +288,11 @@ bool WTConnection::connect(const char *url)
 	return true;
 }
 
-char * WTConnection::download(int *length)
+void * WTConnection::download(uint64_t *length)
 {
-	if(strcmp("http", this->protocol) == 0)
+	if(strcmp("http", this->protocol) == 0 || strcmp("https", this->protocol) == 0)
 	{
 		return download_http(length);
-	} else if(strcmp("https", this->protocol) == 0) {
-		return download_https(length);
 	} else {
 		last_error = "Unimplemented upload for selected protocol";
 		delegate_status(WTHTTP_Error);
@@ -301,13 +300,16 @@ char * WTConnection::download(int *length)
 	};
 }
 
-char *WTConnection::upload(const char *data, int *length)
+size_t WTConnection::download_to(const char *filename)
 {
-	if(strcmp("http", this->protocol) == 0)
+	return 0;
+}
+
+void *WTConnection::upload(const void *data, uint64_t *length)
+{
+	if(strcmp("http", this->protocol) == 0 || strcmp("https", this->protocol) == 0)
 	{
 		return upload_http(data, length);
-	} else if(strcmp("https", this->protocol) == 0) {
-		return upload_https(data, length);
 	} else {
 		last_error = "Unimplemented upload for selected protocol";
 		delegate_status(WTHTTP_Error);
@@ -360,6 +362,11 @@ void WTConnection::disconnect(void)
 	this->protocol = NULL;
 }
 
+const char *WTConnection::get_last_error(void)
+{
+	return this->last_error;
+}
+
 WTConnection::WTConnection(WTConnDelegate *_delegate)
 {
 	this->connected = false;
@@ -373,6 +380,7 @@ WTConnection::WTConnection(WTConnDelegate *_delegate)
 	addr_info = NULL;
 	uri	= NULL;
 	last_error = NULL;
+	query_string = NULL;
 
 #ifndef NO_SSL
 	ssl_ctx = NULL;

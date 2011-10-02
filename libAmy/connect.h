@@ -16,14 +16,15 @@
 #	include <openssl/err.h>
 #endif
 
+#ifndef EXTRA_UA
+#	define EXTRA_UA ""
+#endif
+
 #include "WTConnDelegate.h"
 #include <libink/WTDictionary.h>
 #include <Utility.h>
 
-#define Win32 "Windows"
-#define MacOSX "Macintosh"
-#define Unix "X11"
-#define iPhone "iPhone OS"
+#include <stdint.h>
 
 #define delegate_status(status) \
 	if(this->delegate != NULL)\
@@ -80,13 +81,19 @@ public:
 			object is not connected.  Otherwise, a pointer to
 			the data.
 	 */
-	libAPI char * download(int *length);
+	libAPI virtual void * download(uint64_t *length);
+	/*!
+	@brief		Download from the connected URL to a file.
+	@param		filename	The name of the file to write. (In)
+	@result		The number of bytes written to the file.
+	 */
+	libAPI virtual size_t download_to(const char *filename);
 	/*!
 	@brief		Upload data to the URL connected to.
 	@param		data	The data to upload.
-	@param		length	The length of the result. (Out)
+	@param		length	The length of the result. (In/Out)
 	 */
-	libAPI char * upload(const char *data, int *length);
+	libAPI virtual void * upload(const void *data, uint64_t *length);
 
 	/*!
 	@brief		Set a header (HTTP only).
@@ -98,7 +105,12 @@ public:
 
 	libAPI ~WTConnection();
 	
-	const char *last_error;
+	/*!
+	@brief		Retrieve the last error.
+	@result		The last error that occurred, or NULL if no errors
+			have occurred during this object's lifetime.
+	 */
+	libAPI const char *get_last_error(void);
 protected:
 	/*! Whether the connection is active */
 	bool connected;
@@ -111,7 +123,7 @@ protected:
 	/*! HTTP headers, if any */
 	WTDictionary *headers;
 	/*! The port number to connect to */
-	int port;
+	uint16_t port;
 	/*! Protocol name */
 	char *protocol;
 	/*! The socket */
@@ -128,6 +140,10 @@ protected:
 	struct addrinfo *addr_info;
 	/*! The URI to act on */
 	char *uri;
+	/*! The query string (HTTP-like only) */
+	char *query_string;
+	/*! The internal storage for errors */
+	const char *last_error;
 private:
 	/*!
 	@brief		Parse a URL string into its respective bits.
@@ -138,11 +154,8 @@ private:
 	
 	bool connect_https(void);
 	
-	char *upload_https(const char *data, int *length);
-	char *upload_http(const char *data, int *length);
-	
-	char *download_https(int *length);
-	char *download_http(int *length);
+	void *upload_http(const void *data, uint64_t *length);
+	void *download_http(uint64_t *length);
 };
 
 #endif /*!__AUCTIONS_COMMON_NETWORK_CONN_H_*/

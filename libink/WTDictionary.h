@@ -24,6 +24,7 @@ typedef struct buf_struct
 {
 	char *buffer;
 	size_t buffer_len;
+	const char *fmt;
 } WTSizedBuffer;
 
 /*!
@@ -39,9 +40,9 @@ public:
 	~WTDictionary();
 	
 	const void *get(const char *);
-	void set(const char *, void *);
+	void set(const char *, const void *);
 	
-	WTSizedBuffer *all(void);
+	WTSizedBuffer *all(const char *fmt = NULL);
 	
 	size_t count;
 	

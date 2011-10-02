@@ -74,7 +74,7 @@ inline char *URLEncode(const char *sIn)
 	pInTmp = sIn;
 	while(*pInTmp)
 	{
-		if (!isalnum(*pInTmp) && !isalnum(*pInTmp))
+		if (!isalnum(*pInTmp) && *pInTmp != 0x5f && *pInTmp != 0x2e && *pInTmp != 0x2d)
 			k++;
 		pInTmp++;
 	}
@@ -93,7 +93,7 @@ inline char *URLEncode(const char *sIn)
 		
 		while (*pInTmp)
 		{
-			if(isalnum(*pInTmp))
+			if(isalnum(*pInTmp) || *pInTmp == 0x5f || *pInTmp == 0x2e || *pInTmp == 0x2d)
 				*pOutTmp++ = *pInTmp;
 			else
 				if(isspace(*pInTmp))

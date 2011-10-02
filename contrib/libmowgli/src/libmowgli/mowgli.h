@@ -33,8 +33,10 @@
 #endif
 
 #ifdef MOWGLI_CORE
-# include "win32_support.h"
 # include "mowgli_config.h"
+#endif
+#ifdef _WIN32
+# include "win32_support.h"
 #endif
 
 #include "mowgli_stdinc.h"
@@ -74,6 +76,7 @@ MOWGLI_DECLS_START
 #include "mowgli_allocator.h"
 #include "mowgli_formatter.h"
 #include "mowgli_index.h"
+#include "mowgli_thread.h"
 
 MOWGLI_DECLS_END
 

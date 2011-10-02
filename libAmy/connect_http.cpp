@@ -11,6 +11,22 @@
 #include <Utility.h>
 #include <assert.h>
 
+#ifndef NO_SSL
+#	define SET_THE_ERROR \
+if (is_ssl)\
+{\
+	last_error = ERR_error_string(ERR_get_error(), NULL);\
+	fprintf(stderr, "socket_op: %s\n", last_error);\
+} else {\
+	perror("socket_op");\
+	last_error = strerror(errno);\
+}
+#else
+#	define SET_THE_ERROR \
+perror("socket_op");\
+last_error = strerror(errno);
+#endif
+
 extern "C"
 {
 	bool sendall(int sock, const char *buf, size_t *len);
@@ -19,7 +35,7 @@ extern "C"
 
 void parse_http_headers(const char *http_response,
 			WTDictionary **header_container,
-			int *http_code,
+			uint16_t *http_code,
 			int *data)
 {
 	const char *buffer = http_response;
@@ -96,7 +112,7 @@ void parse_http_headers(const char *http_response,
 	return;
 }
 
-char *parse_http_response(const char *resp, int *http_code, int *length)
+void *parse_http_response(const char *resp, uint16_t *http_code, uint64_t *length)
 {
 	WTDictionary *headers;
 	int start_of_data = 0;
@@ -116,20 +132,20 @@ char *parse_http_response(const char *resp, int *http_code, int *length)
 		const char *encoding = static_cast<const char *>(headers->get("Transfer-Encoding"));
 		if(encoding != NULL && strcmp(encoding, "chunked\r\n") == 0)
 		{
-			long total_size = 0;
+			uint64_t total_size = 0;
 			
 			resp += start_of_data;
 			
 			while(true)
 			{
-				int octet_off = strcspn(resp, "\n\0");
+				uint32_t octet_off = strcspn(resp, "\n\0");
 				const_cast<char *>(resp)[octet_off] = '\0';
-				long octets = strtol(resp, NULL, 16);
+				uint64_t octets = strtol(resp, NULL, 16);
 				if(octets == 0) break; // End of transfer
 				
 				// XXX Platform Dependent
 				// Yes Elizabeth, I really am that anal.
-				long bytes = octets;
+				uint64_t bytes = octets;
 				
 				total_size += bytes;
 				
@@ -167,7 +183,7 @@ char *parse_http_response(const char *resp, int *http_code, int *length)
 	};
 	
 	delete headers;
-	return return_buffer;
+	return static_cast<void *>(return_buffer);
 }
 
 void WTConnection::http_header(const char *header, char *data)
@@ -245,11 +261,23 @@ bool WTConnection::connect_https(void)
 #endif
 }
 
-char *WTConnection::download_https(int *length)
+void *WTConnection::download_http(uint64_t *length)
 {
 	char *request = NULL, *header_str = NULL;
 	size_t size_of_req = 0, req_sent = 0;
 	WTSizedBuffer *header_buff;
+	bool is_ssl, did_send;
+	
+	if(strcmp("https", this->protocol) == 0) is_ssl = true;
+	else is_ssl = false;
+	
+#ifdef NO_SSL
+	if(is_ssl)
+	{
+		fprintf(stderr, "BUG: SSL/TLS disabled (you shouldn't even be connected).\n");
+		return NULL;
+	}
+#endif
 	
 	if(this->headers == NULL)
 	{
@@ -260,7 +288,8 @@ char *WTConnection::download_https(int *length)
 	{
 		this->headers->set("User-Agent", strdup("Mozilla/4.0 (compatible; "
 							OSNAME
-							"; U; en-GB) eScapeCore/0.1.0"));
+							"; U; en-GB) eScapeCore/0.1.0"
+							EXTRA_UA));
 	};
 	
 	if(this->headers->get("Host") == NULL)
@@ -273,9 +302,9 @@ char *WTConnection::download_https(int *length)
 	
 	size_of_req = ( (15 /* GET  HTTP/1.1\r\n */
 			 + strlen(this->uri)
-			 + (header_buff->buffer_len - 18) /* All headers */
+			 + (header_buff->buffer_len) /* All headers */
 			 + (this->headers->count * 2) /* \r\n for each header */
-			 + 2 /* \r\n for end of headers */) * sizeof(char));
+			 + 4 /* \r\n for end of headers */) * sizeof(char));
 	
 	request = static_cast<char *>(malloc(size_of_req));
 	if(request == NULL)
@@ -290,139 +319,52 @@ char *WTConnection::download_https(int *length)
 		alloc_error("response buffer", 128);
 	
 	delegate_status(WTHTTP_Transferring);
-	
+	printf("< %s", request);
 #ifndef NO_SSL
-	bool sent_req = sendall_ssl(this->ssl_socket, request, &req_sent);
+	if (is_ssl)
+	{
+		did_send = sendall_ssl(this->ssl_socket, request, &req_sent);
+	} else {
+#endif
+		did_send = sendall(this->socket, request, &req_sent);
+#ifndef NO_SSL
+	}
+#endif
 	
 	free(request);
 	
-	if(!sent_req)
+	if(!did_send)
 	{
-		fprintf(stderr, "Sent %ld of %ld bytes\ncan't send anymore :(\n",
-			static_cast<long int>(req_sent), static_cast<long int>(size_of_req));
-		free(response);
-		last_error = ERR_error_string(ERR_get_error(), NULL);
+		SET_THE_ERROR
+		
 		delegate_status(WTHTTP_Error);
 		return NULL;
 	};
 	
-	int total = 0;
+	uint64_t total = 0;
 	
 	while(1)
 	{
 		response = static_cast<char *>(realloc(response, total+128));
-		int read = BIO_read(this->ssl_socket, (response+total), 128);
-		if(read < 0)
+		int read;
+		
+#ifndef NO_SSL
+		if (is_ssl)
 		{
-			fprintf(stderr, "Can't read :(\n");
-			free(response);
-			last_error = ERR_error_string(ERR_get_error(), NULL);
-			delegate_status(WTHTTP_Error);
-			return NULL;
-		};
-		if(read == 0)
-		{
-			// closed
-			response[total] = '\0';
-			break;
-		};
-		total += read;
-	};
-	
-	int http_code = 0;
-	char *ret = parse_http_response(response, &http_code, length);
-	// TODO: Deal with 3xx codes
-	if(http_code >= 400)
-	{
-		last_error = "HTTP server was Not OK";
-		delegate_status(WTHTTP_Error);
-	}
-	else
-	{
-		delegate_status(WTHTTP_Finished);
-	};
-	free(response);
-	return ret;
-#else
-	free(request);
-	free(response);
-	fprintf(stderr, "BUG: SSL/TLS disabled (you shouldn't even be connected).\n");
-	last_error = "Bug in libamy: Attempted to recv from SSL when SSL is disabled.";
-	delegate_status(WTHTTP_Error);
-	return NULL;
+			read = BIO_read(this->ssl_socket, (response+total), 128);
+		} else {
 #endif
-}
-
-char *WTConnection::download_http(int *length)
-{
-	char *request = NULL, *header_str = NULL;
-	size_t size_of_req = 0, req_sent = 0;
-	WTSizedBuffer *header_buff;
-	
-	if(this->headers == NULL)
-	{
-		this->headers = new WTDictionary;
-	};
-	
-	if(this->headers->get("User-Agent") == NULL)
-	{
-		this->headers->set("User-Agent", strdup("Mozilla/4.0 (compatible; "
-							OSNAME
-							"; U; en-GB) eScapeCore/0.1.0"));
-	};
-	
-	if(this->headers->get("Host") == NULL)
-	{
-		this->headers->set("Host", strdup(this->domain));
-	};
-	
-	header_buff = this->headers->all();
-	header_str = header_buff->buffer;
-	
-	size_of_req = ( (15 /* GET  HTTP/1.1\r\n */
-			 + strlen(this->uri)
-			 + (header_buff->buffer_len - 18) /* All headers */
-			 + (this->headers->count * 2) /* \r\n for each header */
-			 + 2 /* \r\n for end of headers */) * sizeof(char));
-	
-	request = static_cast<char *>(malloc(size_of_req));
-	if(request == NULL)
-		alloc_error("request buffer", size_of_req);
-	
-	req_sent = snprintf(request, size_of_req, "GET %s HTTP/1.1%s\r\n\r\n", this->uri, header_str);
-	free(header_str);
-	free(header_buff);
-	
-	char *response = static_cast<char *>(calloc(128, sizeof(char)));
-	if(response == NULL)
-		alloc_error("response buffer", 128);
-	
-	delegate_status(WTHTTP_Transferring);
-	
-	if(!sendall(this->socket, request, &req_sent))
-	{
-		perror("sendall");
-		printf("Couldn't send!\n");
-		free(response);
-		free(request);
-		last_error = strerror(errno);
-		delegate_status(WTHTTP_Error);
-		return NULL;
-	};
-	
-	free(request);
-	
-	int total = 0;
-	
-	while(1)
-	{
-		response = static_cast<char*>(realloc(response, total+128));
-		int read = recv(this->socket, (response+total), 128, 0);
+			read = recv(this->socket, (response+total), 128, 0);
+#ifndef NO_SSL
+		}
+#endif
+		
 		if(read < 0)
 		{
-			fprintf(stderr, "Can't read :(\n");
+			SET_THE_ERROR
+			
 			free(response);
-			last_error = strerror(errno);
+			
 			delegate_status(WTHTTP_Error);
 			return NULL;
 		};
@@ -434,9 +376,9 @@ char *WTConnection::download_http(int *length)
 		};
 		total += read;
 	};
-	
-	int http_code = 0;
-	char *ret = parse_http_response(response, &http_code, length);
+	printf("> %s", response);
+	uint16_t http_code = 0;
+	void *ret = parse_http_response(response, &http_code, length);
 	// TODO: Deal with 3xx codes
 	if(http_code >= 400)
 	{
@@ -451,14 +393,27 @@ char *WTConnection::download_http(int *length)
 	return ret;
 }
 
-char *WTConnection::upload_https(const char *data, int *length)
+void *WTConnection::upload_http(const void *data, uint64_t *length)
 {
-	size_t size_of_data, size_of_initial;
+	size_t size_of_initial;
 	char str_size_of_data[64];		// XXX magic number
 	size_t data_sent, initial_sent;
 	char *initial_crap;
 	char *header_str;
 	WTSizedBuffer *header_buff;
+	bool sent_initial, sent_data;
+	bool is_ssl;
+	
+	if(strcmp("https", this->protocol) == 0) is_ssl = true;
+	else is_ssl = false;
+	
+#ifdef NO_SSL
+	if(is_ssl)
+	{
+		fprintf(stderr, "BUG: SSL/TLS disabled (you shouldn't even be connected).\n");
+		return NULL;
+	}
+#endif
 	
 	if(this->headers == NULL)
 	{
@@ -469,7 +424,8 @@ char *WTConnection::upload_https(const char *data, int *length)
 	{
 		this->headers->set("User-Agent", strdup("Mozilla/4.0 (compatible; "
 							OSNAME
-							"; U; en-GB) eScapeCore/0.1.0"));
+							"; U; en-GB) eScapeCore/0.1.0"
+							EXTRA_UA));
 	};
 	if(this->headers->get("Host") == NULL)
 	{
@@ -479,148 +435,10 @@ char *WTConnection::upload_https(const char *data, int *length)
 	{
 		this->headers->set("Connection", strdup("Close"));
 	};
-	
-	if(!this->connected)
+	if(this->headers->get("Content-type") == NULL)
 	{
-		fprintf(stderr, "WTConnection: upload before connect!  (order error)\n");
-		last_error = "You must be connected to upload data.";
-		delegate_status(WTHTTP_Error);
-		return NULL;
-	};
-	
-	size_of_data = strlen(data);
-	data_sent = size_of_data;
-	
-	snprintf(str_size_of_data, sizeof(str_size_of_data) - 1,
-		 "%ld", static_cast<long int>(size_of_data));
-	
-	header_buff = this->headers->all();
-	header_str = header_buff->buffer;
-	
-	size_of_initial = ( (16 /* POST  HTTP/1.1\r\n */
-			     + strlen(this->uri)
-			     + 16 /*strlen("Content-length: ") */
-			     + strlen(str_size_of_data)
-			     + (header_buff->buffer_len - 18) /* All headers */
-			     + (this->headers->count * 2) /* \r\n for each header */
-			     + 2 /* \r\n for end of headers */
-			     + 2 /* \r\n for beginning of data */) * sizeof(char));
-	
-	initial_crap = static_cast<char *>(malloc(size_of_initial));
-	if(initial_crap == NULL)
-		alloc_error("initial headers", size_of_initial);
-	
-	initial_sent = snprintf(initial_crap, size_of_initial,
-		 "POST %s HTTP/1.1%s\r\nContent-Length: %s\r\n\r\n",
-		 this->uri, header_str, str_size_of_data);
-	
-	free(header_str);
-	free(header_buff);
-	
-	char *response = static_cast<char *>(calloc(128, sizeof(char)));
-	if(response == NULL)
-		alloc_error("response buffer", 128);
-	
-	delegate_status(WTHTTP_Transferring);
-	
-#ifndef NO_SSL
-	bool sent_initial = sendall_ssl(this->ssl_socket, initial_crap, &initial_sent);
-	bool sent_data = sendall_ssl(this->ssl_socket, data, &data_sent);
-	
-	free(initial_crap);
-	
-	if(!sent_initial || !sent_data)
-	{
-		fprintf(stderr, "Sent %ld of %ld initial bytes, and %ld of %ld payload\ncan't send anymore :(\n",
-			static_cast<long int>(initial_sent), static_cast<long int>(size_of_initial),
-			static_cast<long int>(data_sent), static_cast<long int>(size_of_data));
-		free(response);
-		last_error = ERR_error_string(ERR_get_error(), NULL);
-		delegate_status(WTHTTP_Error);
-		return NULL;
-	};
-	
-	int total = 0;
-	
-	while(1)
-	{
-		response = static_cast<char *>(realloc(response, total+128));
-		int read = BIO_read(this->ssl_socket, (response+total), 128);
-		if(read < 0)
-		{
-			if(!this->connected)
-			{
-				// cancelled, this is normal
-				last_error = "User cancelled operation.";
-				delegate_status(WTHTTP_Cancelled);
-				return NULL;
-			};
-			last_error = ERR_error_string(ERR_get_error(), NULL);
-			fprintf(stderr, "Error reading: %s\n", last_error);
-			free(response);
-			delegate_status(WTHTTP_Error);
-			return NULL;
-		};
-		if(read == 0)
-		{
-			// closed
-			response[total] = '\0';
-			break;
-		};
-		total += read;
-	};
-	
-	int http_code = 0;
-	char *ret = parse_http_response(response, &http_code, length);
-	// TODO: Deal with 3xx codes
-	if(http_code >= 400)
-	{
-		last_error = "HTTP server was Not OK";
-		delegate_status(WTHTTP_Error);
+		this->headers->set("Content-type", strdup("application/x-www-form-urlencoded"));
 	}
-	else
-	{
-		delegate_status(WTHTTP_Finished);
-	};
-	free(response);
-	return ret;
-#else
-	free(initial_crap);
-	free(response);
-	fprintf(stderr, "BUG: SSL/TLS disabled (you shouldn't even be connected).\n");
-	delegate_status(WTHTTP_Error);
-	return NULL;
-#endif
-}
-
-char *WTConnection::upload_http(const char *data, int *length)
-{
-	size_t size_of_data, size_of_initial;
-	char str_size_of_data[64];		// XXX magic number
-	size_t data_sent, initial_sent;
-	char *initial_crap;
-	char *header_str;
-	WTSizedBuffer *header_buff;
-	
-	if(this->headers == NULL)
-	{
-		this->headers = new WTDictionary;
-	};
-	
-	if(this->headers->get("User-Agent") == NULL)
-	{
-		this->headers->set("User-Agent", strdup("Mozilla/4.0 (compatible; "
-							OSNAME
-							"; U; en-GB) eScapeCore/0.1.0"));
-	};
-	if(this->headers->get("Host") == NULL)
-	{
-		this->headers->set("Host", strdup(this->domain));
-	};
-	if(this->headers->get("Connection") == NULL)
-	{
-		this->headers->set("Connection", strdup("Close"));
-	};
 	
 	if(!this->connected)
 	{
@@ -630,11 +448,10 @@ char *WTConnection::upload_http(const char *data, int *length)
 		return NULL;
 	};
 	
-	size_of_data = strlen(data);
-	data_sent = size_of_data;
+	data_sent = *length;
 	
 	snprintf(str_size_of_data, sizeof(str_size_of_data) - 1,
-		 "%ld", static_cast<long int>(size_of_data));
+		 "%llu", *length);
 	
 	header_buff = this->headers->all();
 	header_str = header_buff->buffer;
@@ -643,7 +460,7 @@ char *WTConnection::upload_http(const char *data, int *length)
 			     + strlen(this->uri)
 			     + 16 /*strlen("Content-length: ") */
 			     + strlen(str_size_of_data)
-			     + (header_buff->buffer_len - 18) /* All headers */
+			     + header_buff->buffer_len /* All headers */
 			     + (this->headers->count * 2) /* \r\n for each header */
 			     + 2 /* \r\n for end of headers */
 			     + 2 /* \r\n for beginning of data */) * sizeof(char));
@@ -665,30 +482,69 @@ char *WTConnection::upload_http(const char *data, int *length)
 	
 	delegate_status(WTHTTP_Transferring);
 	
-	if(!sendall(this->socket, initial_crap, &initial_sent)
-	   || !sendall(this->socket, data, &data_sent))
+#ifndef NO_SSL
+	if(is_ssl)
 	{
-		perror("sendall");
-		printf("Couldn't send!\n");
+		sent_initial = sendall_ssl(this->ssl_socket, initial_crap, &initial_sent);
+		if(sent_initial) sent_data = sendall_ssl(this->ssl_socket, static_cast<const char *>(data), &data_sent);
+	} else {
+#endif
+		sent_initial = sendall(this->socket, initial_crap, &initial_sent);
+		if(sent_initial) sent_data = sendall(this->socket, static_cast<const char *>(data), &data_sent);
+#ifndef NO_SSL
+	}
+#endif
+	
+	free(initial_crap);
+	
+	if(!sent_initial || !sent_data)
+	{
+		fprintf(stderr, "Sent %lu of %lu initial bytes, and %lu of %llu payload\n",
+			static_cast<long int>(initial_sent), static_cast<long int>(size_of_initial),
+			static_cast<long int>(data_sent), *length);
+		
 		free(response);
-		last_error = strerror(errno);
+		
+		SET_THE_ERROR
+		
 		delegate_status(WTHTTP_Error);
 		return NULL;
 	};
 	
-	free(initial_crap);
-	
-	int total = 0;
+	uint64_t total = 0;
 	
 	while(1)
 	{
 		response = static_cast<char *>(realloc(response, total+128));
-		int read = recv(this->socket, (response+total), 128, 0);
+		int read;
+		
+#ifndef NO_SSL
+		if(is_ssl)
+		{
+			read = BIO_read(this->ssl_socket, (response+total), 128);
+		}
+		 else
+		{
+#endif
+			read = recv(this->socket, (response+total), 128, 0);
+#ifndef NO_SSL
+		}
+#endif
+		
 		if(read < 0)
 		{
-			last_error = strerror(errno);
-			fprintf(stderr, "Error reading: %s\n", last_error);
 			free(response);
+			
+			if(!this->connected)
+			{
+				// cancelled, this is normal
+				last_error = "User cancelled operation.";
+				delegate_status(WTHTTP_Cancelled);
+				return NULL;
+			};
+			
+			SET_THE_ERROR
+			
 			delegate_status(WTHTTP_Error);
 			return NULL;
 		};
@@ -701,8 +557,8 @@ char *WTConnection::upload_http(const char *data, int *length)
 		total += read;
 	};
 	
-	int http_code = 0;
-	char *ret = parse_http_response(response, &http_code, length);
+	uint16_t http_code = 0;
+	void *ret = parse_http_response(response, &http_code, length);
 	// TODO: Deal with 3xx codes
 	if(http_code >= 400)
 	{

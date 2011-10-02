@@ -39,7 +39,7 @@ WTDictionary::~WTDictionary()
 	mowgli_mutex_destroy(&(this->access_mutex));
 }
 
-void WTDictionary::set(const char *key, void *value)
+void WTDictionary::set(const char *key, const void *value)
 {
 	if(key == NULL)
 		return;
@@ -51,7 +51,7 @@ void WTDictionary::set(const char *key, void *value)
 
 		/* do not allow reads while adding to the dict */
 		mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
-		mowgli_patricia_add(this->dict, key, static_cast<void *>(value));
+		mowgli_patricia_add(this->dict, key, const_cast<void *>(value));
 		++(this->count);
 		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 		return;
@@ -72,7 +72,7 @@ void WTDictionary::set(const char *key, void *value)
 		--(this->count);
 		if(value != NULL)
 		{
-			mowgli_patricia_add(this->dict, key, static_cast<void *>(value));
+			mowgli_patricia_add(this->dict, key, const_cast<void *>(value));
 			++(this->count);
 		};
 		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
@@ -114,9 +114,12 @@ int add_to_buffer(const char *key, void *data, void *privdata)
 	};
 	
 	WTSizedBuffer *dict = static_cast<WTSizedBuffer *>(privdata);
-	char *next = static_cast<char *>(data);
+	const char *next = static_cast<char *>(data);
+	if(next == NULL) next = "";
 	char *temp_buffer = NULL;
-	size_t next_len = strlen(key) + 2 /*": "*/ + strlen(next) + 2 /*\r\n*/;
+	const char *fmt = dict->fmt;
+	if(fmt == NULL) fmt = "\r\n%s: %s";
+	size_t next_len = strlen(key) + strlen(next) + strlen(fmt) - 4; /*%s%s*/
 	size_t old_len = dict->buffer_len;
 
 	dict->buffer_len += next_len;
@@ -125,15 +128,14 @@ int add_to_buffer(const char *key, void *data, void *privdata)
 	{
 		++(dict->buffer_len);
 		dict->buffer = static_cast<char *>(calloc(dict->buffer_len, sizeof(char)));
-		snprintf(dict->buffer, dict->buffer_len, "\r\n%s: %s",
-			key, next);
+		snprintf(dict->buffer, dict->buffer_len, fmt, key, next);
 	}
 	 else
 	{
 		dict->buffer = static_cast<char *>(realloc(dict->buffer, dict->buffer_len * sizeof(char)));
 		++next_len; // for the nul byte
 		temp_buffer = static_cast<char *>(calloc(next_len, sizeof(char)));
-		snprintf(temp_buffer, next_len, "\r\n%s: %s", key, next);
+		snprintf(temp_buffer, next_len, fmt, key, next);
 		strncat(dict->buffer, const_cast<const char *>(temp_buffer), dict->buffer_len);
 		free(temp_buffer);
 	};
@@ -141,10 +143,11 @@ int add_to_buffer(const char *key, void *data, void *privdata)
 	return 0;
 }
 
-WTSizedBuffer *WTDictionary::all(void)
+WTSizedBuffer *WTDictionary::all(const char *fmt)
 {
 	WTSizedBuffer *all_buffer;
 	all_buffer = static_cast<WTSizedBuffer *>(calloc(1, sizeof(all_buffer)));
+	all_buffer->fmt = fmt;
 	
 	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	mowgli_patricia_foreach(this->dict, &add_to_buffer, all_buffer);
