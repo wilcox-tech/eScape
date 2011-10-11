@@ -1,9 +1,10 @@
 /*
- * connect.cpp - Internet socket / connection functionality
- * libAmy
- * Wilcox Technologies
+ * connect.cpp - implementation of Internet socket / connection functionality
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
  *
- * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
  * License: NCSA-WT
  */
 
@@ -190,8 +191,9 @@ bool WTConnection::parse_url(const char *url)
 			alloc_error("uri", length);
 		strncpy(uri, (url + domain_length), length);
 		this->uri[length] = '\0';
+		this->query_string = strchr(uri, static_cast<int>('?'));
 	};
-
+	
 	return true;
 }
 
@@ -287,13 +289,11 @@ bool WTConnection::connect(const char *url)
 	return true;
 }
 
-char * WTConnection::download(int *length)
+void * WTConnection::download(uint64_t *length)
 {
-	if(strcmp("http", this->protocol) == 0)
+	if(strcmp("http", this->protocol) == 0 || strcmp("https", this->protocol) == 0)
 	{
 		return download_http(length);
-	} else if(strcmp("https", this->protocol) == 0) {
-		return download_https(length);
 	} else {
 		last_error = "Unimplemented upload for selected protocol";
 		delegate_status(WTHTTP_Error);
@@ -301,13 +301,16 @@ char * WTConnection::download(int *length)
 	};
 }
 
-char *WTConnection::upload(const char *data, int *length)
+size_t WTConnection::download_to(const char *filename)
 {
-	if(strcmp("http", this->protocol) == 0)
+	return 0;
+}
+
+void *WTConnection::upload(const void *data, uint64_t *length)
+{
+	if(strcmp("http", this->protocol) == 0 || strcmp("https", this->protocol) == 0)
 	{
 		return upload_http(data, length);
-	} else if(strcmp("https", this->protocol) == 0) {
-		return upload_https(data, length);
 	} else {
 		last_error = "Unimplemented upload for selected protocol";
 		delegate_status(WTHTTP_Error);
@@ -350,14 +353,28 @@ void WTConnection::disconnect(void)
 		this->addr_info = NULL;
 	};
 
-	free(this->uri);
-	this->uri = NULL;
+	if(this->uri != NULL)
+	{
+		free(this->uri);
+		this->uri = NULL;
+	};
 
-	free(this->domain);
-	this->domain = NULL;
+	if(this->domain != NULL)
+	{
+		free(this->domain);
+		this->domain = NULL;
+	};
 
-	free(this->protocol);
-	this->protocol = NULL;
+	if(this->protocol != NULL)
+	{
+		free(this->protocol);
+		this->protocol = NULL;
+	};
+}
+
+const char *WTConnection::get_last_error(void)
+{
+	return this->last_error;
 }
 
 WTConnection::WTConnection(WTConnDelegate *_delegate)
@@ -373,6 +390,7 @@ WTConnection::WTConnection(WTConnDelegate *_delegate)
 	addr_info = NULL;
 	uri	= NULL;
 	last_error = NULL;
+	query_string = NULL;
 
 #ifndef NO_SSL
 	ssl_ctx = NULL;
@@ -391,6 +409,10 @@ WTConnection::~WTConnection()
 	{
 		delete this->headers;
 	};
+
+#ifndef NO_SSL
+	ERR_remove_state(0);
+#endif
 
 	// This solves a corner case where object deletion leaks -- could happen
 	// if a connection is deleted in the middle of a connect operation and

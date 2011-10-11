@@ -1,14 +1,15 @@
 /*
- * WTConnDelegate.h - delegate class for WTConnection
- * Auctions
- * Wilcox Technologies
+ * WTConnDelegate.h - interface of delegate class for WTConnection
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
  *
- * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
- * License: internal use only
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
+ * License: NCSA-WT
  */
 
-#ifndef __WT_CONNECTION_DELEGATE_H_
-#define __WT_CONNECTION_DELEGATE_H_
+#ifndef __LIBAMY_WT_CONNDELEGATE_H__
+#define __LIBAMY_WT_CONNDELEGATE_H__
 
 /*! The status of the connection as reported to update_status */
 enum WTHTTPConnectionStatus
@@ -44,4 +45,4 @@ public:
 	virtual void update_status(WTConnection *connection, char status) = 0;
 };
 
-#endif /*!__WT_CONNECTION_DELEGATE_H_*/
+#endif /*!__LIBAMY_WT_CONNDELEGATE_H__*/

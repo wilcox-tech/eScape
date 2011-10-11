@@ -31,6 +31,12 @@
 #ifdef _WIN32
 #	define libAPI __declspec(dllexport)
 #	define strcasecmp			_stricmp
+	typedef unsigned __int16 uint16_t;
+	typedef unsigned __int32 uint32_t;
+	typedef unsigned __int64 uint64_t;
+	typedef __int16 int16_t;
+	typedef __int32 int32_t;
+	typedef __int64 int64_t;
 #else
 #	define libAPI
 #endif
@@ -38,11 +44,11 @@
 #if defined(_WIN32) || defined(__sun)
 inline time_t timegm(struct tm *stupid_time)
 {
-	time_t secs, local_secs, gmt_secs;
+	time_t secs, gmt_secs;
 	
 	time(&secs);
 	
-	local_secs = mktime(stupid_time);
+	//local_secs = mktime(stupid_time);
 	stupid_time = gmtime(&secs);
 	gmt_secs = mktime(stupid_time);
 	
@@ -61,6 +67,8 @@ inline char *URLEncode(const char *sIn)
 {
 	char *sOut;
 	
+	if(sIn == NULL) return NULL;
+
 	int k;
 	const int nLen = strlen(sIn) + 1;
 	
@@ -74,7 +82,7 @@ inline char *URLEncode(const char *sIn)
 	pInTmp = sIn;
 	while(*pInTmp)
 	{
-		if (!isalnum(*pInTmp) && !isalnum(*pInTmp))
+		if (!isalnum(*pInTmp) && *pInTmp != 0x5f && *pInTmp != 0x2e && *pInTmp != 0x2d)
 			k++;
 		pInTmp++;
 	}
@@ -93,7 +101,7 @@ inline char *URLEncode(const char *sIn)
 		
 		while (*pInTmp)
 		{
-			if(isalnum(*pInTmp))
+			if(isalnum(*pInTmp) || *pInTmp == 0x5f || *pInTmp == 0x2e || *pInTmp == 0x2d)
 				*pOutTmp++ = *pInTmp;
 			else
 				if(isspace(*pInTmp))
