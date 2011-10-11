@@ -1,2 +1,0 @@
-The idea of this folder is to put the CMake build dir here.
-That way you don't clutter up the src tree with the object files.
