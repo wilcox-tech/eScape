@@ -21,10 +21,10 @@ int add_to_buffer(const char *, void *, void *);
 
 libAPI WTDictionary::WTDictionary(bool manage_memory)
 {
-	mowgli_mutex_create(this->access_mutex);
-	mtex_do_or_die(mowgli_mutex_lock(this->access_mutex));
+	mowgli_mutex_create(&(this->access_mutex));
+	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	this->dict = mowgli_patricia_create(NULL);
-	mtex_do_or_die(mowgli_mutex_unlock(this->access_mutex));
+	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 	this->_count = 0;
 	this->manager = manage_memory;
 }
@@ -37,7 +37,7 @@ void tear_down(const char *key UNUSED, void *data, void *privdata UNUSED)
 libAPI WTDictionary::~WTDictionary()
 {
 	mowgli_patricia_destroy(this->dict, (manager ? tear_down : NULL), NULL);
-	mowgli_mutex_destroy(this->access_mutex);
+	mowgli_mutex_destroy(&(this->access_mutex));
 }
 
 libAPI void WTDictionary::set(const char *key, const void *value)
@@ -51,10 +51,10 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 		if(value == NULL) return;
 
 		/* do not allow reads while adding to the dict */
-		mtex_do_or_die(mowgli_mutex_lock(this->access_mutex));
+		mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 		mowgli_patricia_add(this->dict, key, const_cast<void *>(value));
 		++(this->_count);
-		mtex_do_or_die(mowgli_mutex_unlock(this->access_mutex));
+		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 		return;
 	}
 	 else
@@ -64,7 +64,7 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 		   free it, delete it, decrement, and then add and increment
 		   (if applicable).  But it MUST be locked, because otherwise
 		   Very Bad Things happen. */
-		mtex_do_or_die(mowgli_mutex_lock(this->access_mutex));
+		mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 		if(manager)
 		{
 			free(mowgli_patricia_retrieve(this->dict, key));
@@ -76,7 +76,7 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 			mowgli_patricia_add(this->dict, key, const_cast<void *>(value));
 			++(this->_count);
 		};
-		mtex_do_or_die(mowgli_mutex_unlock(this->access_mutex));
+		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 		
 		return;
 	};
@@ -90,9 +90,9 @@ libAPI const void *WTDictionary::get(const char *key)
 		return NULL;
 	
 	/* Only one thread shall read at a time */
-	mtex_do_or_die(mowgli_mutex_lock(this->access_mutex));
+	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	value = mowgli_patricia_retrieve(this->dict, key);
-	mtex_do_or_die(mowgli_mutex_unlock(this->access_mutex));
+	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 	
 	return value;
 }
@@ -163,9 +163,9 @@ libAPI WTSizedBuffer *WTDictionary::all(const char *fmt)
 	else
 		all_buffer->fmt = fmt;
 	
-	mtex_do_or_die(mowgli_mutex_lock(this->access_mutex));
+	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	mowgli_patricia_foreach(this->dict, &add_to_buffer, all_buffer);
-	mtex_do_or_die(mowgli_mutex_unlock(this->access_mutex));
+	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 	
 	if(fre) { free(const_cast<char *>(all_buffer->fmt)); all_buffer->fmt = NULL; };
 	

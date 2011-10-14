@@ -28,7 +28,7 @@ struct mowgli_mempool_t_ {
 	mowgli_list_t stack;
 	mowgli_destructor_t destructor;
 #ifdef NOTYET
-	mowgli_mutex_t mutex;
+	mowgli_mutex_t *mutex;
 #endif
 };
 
@@ -45,7 +45,7 @@ mowgli_mempool_t *mowgli_mempool_with_custom_destructor(mowgli_destructor_t dest
 	pool = mowgli_alloc(sizeof(mowgli_mempool_t));
 	pool->destructor = destructor;
 #ifdef NOTYET
-	mowgli_mutex_create(pool->mutex);
+	pool->mutex = mowgli_mutex_create();
 #endif
 	return pool;
 }

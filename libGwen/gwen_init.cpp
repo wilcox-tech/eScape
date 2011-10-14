@@ -9,7 +9,7 @@
 
 #include <libAmy/libAmy.h>
 
-libAPI void gwen_init(void)
+void gwen_init(void)
 {
 	amy_init();
 }

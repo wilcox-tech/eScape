@@ -221,7 +221,6 @@ bool WTConnection::connect(const char *url)
 		fprintf(stderr, "can't parse URL %s\n", url);
 		last_error = "unparsable URL";
 		delegate_status(WTHTTP_Error);
-		this->connecting = false;
 		return false;
 	};
 
@@ -250,7 +249,6 @@ bool WTConnection::connect(const char *url)
 		free(this->uri);
 		free(this->domain);
 		free(this->protocol);
-		this->connecting = false;
 		return false;
 	};
 
@@ -282,11 +280,9 @@ bool WTConnection::connect(const char *url)
 		free(this->uri);
 		free(this->domain);
 		free(this->protocol);
-		this->connecting = false;
 		return false;
 	};
 
-	this->connecting = false;
 	this->connected = true;
 	delegate_status(WTHTTP_Connected);
 
@@ -384,7 +380,6 @@ const char *WTConnection::get_last_error(void)
 WTConnection::WTConnection(WTConnDelegate *_delegate)
 {
 	this->connected = false;
-	this->connecting = false;
 	this->delegate = _delegate;
 
 	domain	= NULL;
