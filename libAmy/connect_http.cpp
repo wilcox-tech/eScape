@@ -208,10 +208,6 @@ bool WTConnection::connect_https(void)
 #ifndef NO_SSL
 	this->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 	this->ssl_socket = BIO_new_ssl_connect(this->ssl_ctx);
-	BIO_get_ssl(this->ssl_socket, &ssl);
-	SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-	BIO_set_conn_hostname(this->ssl_socket, this->domain);
-	BIO_set_conn_int_port(this->ssl_socket, &(this->port));
 	if(this->ssl_socket == NULL)
 	{
 		if(!this->connecting) return false;
@@ -221,6 +217,10 @@ bool WTConnection::connect_https(void)
 		delegate_status(WTHTTP_Error);
 		return false;
 	};
+	BIO_get_ssl(this->ssl_socket, &ssl);
+	SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+	BIO_set_conn_hostname(this->ssl_socket, this->domain);
+	BIO_set_conn_int_port(this->ssl_socket, &(this->port));
 	if(BIO_do_connect(this->ssl_socket) <= 0)
 	{
 		if(!this->connecting) return false;

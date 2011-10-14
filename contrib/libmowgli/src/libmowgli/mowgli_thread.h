@@ -26,27 +26,27 @@
 
 #if defined(_WIN32)				/* Windows threading */
 
-	typedef HANDLE mowgli_mutex_t;
+	typedef HANDLE * mowgli_mutex_t;
 
 #elif defined(__sun)				/* Solaris/UnixWare threading */
 
 #	include <thread.h>
 #	include <synch.h>
-	typedef mutex_t mowgli_mutex_t;
+	typedef mutex_t * mowgli_mutex_t;
 
 #else						/* pthreads */
 
 #	include <pthread.h>
-	typedef pthread_mutex_t mowgli_mutex_t;
+	typedef pthread_mutex_t * mowgli_mutex_t;
 
 #endif
 
 
-int mowgli_mutex_create(mowgli_mutex_t *mutex);
-int mowgli_mutex_lock(mowgli_mutex_t *mutex);
-int mowgli_mutex_trylock(mowgli_mutex_t *mutex);
-int mowgli_mutex_unlock(mowgli_mutex_t *mutex);
-int mowgli_mutex_destroy(mowgli_mutex_t *mutex);
+int mowgli_mutex_create(mowgli_mutex_t mutex);
+int mowgli_mutex_lock(mowgli_mutex_t mutex);
+int mowgli_mutex_trylock(mowgli_mutex_t mutex);
+int mowgli_mutex_unlock(mowgli_mutex_t mutex);
+int mowgli_mutex_destroy(mowgli_mutex_t mutex);
 
 
 #endif /* !__MOWGLI_THREAD_H__ */

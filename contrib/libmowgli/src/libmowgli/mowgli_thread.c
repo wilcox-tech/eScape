@@ -31,7 +31,7 @@
 #if defined(_WIN32)
 
 
-int mowgli_mutex_create(mowgli_mutex_t *mutex)
+int mowgli_mutex_create(mowgli_mutex_t mutex)
 {
 	*mutex = CreateMutex(NULL, FALSE, NULL);
 	if(*mutex == NULL)
@@ -40,17 +40,17 @@ int mowgli_mutex_create(mowgli_mutex_t *mutex)
 	return 0;
 }
 
-int mowgli_mutex_lock(mowgli_mutex_t *mutex)
+int mowgli_mutex_lock(mowgli_mutex_t mutex)
 {
 	return WaitForSingleObject(*mutex, INFINITE);
 }
 
-int mowgli_mutex_trylock(mowgli_mutex_t *mutex)
+int mowgli_mutex_trylock(mowgli_mutex_t mutex)
 {
 	return WaitForSingleObject(*mutex, 0);
 }
 
-int mowgli_mutex_unlock(mowgli_mutex_t *mutex)
+int mowgli_mutex_unlock(mowgli_mutex_t mutex)
 {
 	if(ReleaseMutex(*mutex) != 0)
 		return 0;
@@ -58,7 +58,7 @@ int mowgli_mutex_unlock(mowgli_mutex_t *mutex)
 	return GetLastError();
 }
 
-int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
+int mowgli_mutex_destroy(mowgli_mutex_t mutex)
 {
 	CloseHandle(*mutex);
 	return 0;
@@ -74,27 +74,27 @@ int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
 #elif defined(__sun)
 
 
-int mowgli_mutex_create(mowgli_mutex_t *mutex)
+int mowgli_mutex_create(mowgli_mutex_t mutex)
 {
 	return mutex_init(mutex, USYNC_THREAD, NULL);
 }
 
-int mowgli_mutex_lock(mowgli_mutex_t *mutex)
+int mowgli_mutex_lock(mowgli_mutex_t mutex)
 {
 	return mutex_lock(mutex);
 }
 
-int mowgli_mutex_trylock(mowgli_mutex_t *mutex)
+int mowgli_mutex_trylock(mowgli_mutex_t mutex)
 {
 	return mutex_trylock(mutex);
 }
 
-int mowgli_mutex_unlock(mowgli_mutex_t *mutex)
+int mowgli_mutex_unlock(mowgli_mutex_t mutex)
 {
 	return mutex_unlock(mutex);
 }
 
-int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
+int mowgli_mutex_destroy(mowgli_mutex_t mutex)
 {
 	return mutex_destroy(mutex);
 }
@@ -112,27 +112,27 @@ int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
 #else
 
 
-int mowgli_mutex_create(mowgli_mutex_t *mutex)
+int mowgli_mutex_create(mowgli_mutex_t mutex)
 {
 	return pthread_mutex_init(mutex, NULL);
 }
 
-int mowgli_mutex_lock(mowgli_mutex_t *mutex)
+int mowgli_mutex_lock(mowgli_mutex_t mutex)
 {
 	return pthread_mutex_lock(mutex);
 }
 
-int mowgli_mutex_trylock(mowgli_mutex_t *mutex)
+int mowgli_mutex_trylock(mowgli_mutex_t mutex)
 {
 	return pthread_mutex_trylock(mutex);
 }
 
-int mowgli_mutex_unlock(mowgli_mutex_t *mutex)
+int mowgli_mutex_unlock(mowgli_mutex_t mutex)
 {
 	return pthread_mutex_unlock(mutex);
 }
 
-int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
+int mowgli_mutex_destroy(mowgli_mutex_t mutex)
 {
 	return pthread_mutex_destroy(mutex);
 }

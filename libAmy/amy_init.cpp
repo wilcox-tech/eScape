@@ -27,15 +27,15 @@
 void amy_ssl_lockback(int mode, int n, const char *file, int line)
 {
 	if(mode & CRYPTO_LOCK)
-		mowgli_mutex_lock(&(ssl_lock_group[n]));
+		mowgli_mutex_lock(ssl_lock_group[n]);
 	else
-		mowgli_mutex_unlock(&(ssl_lock_group[n]));
+		mowgli_mutex_unlock(ssl_lock_group[n]);
 }
 	
 libAPI void amy_init()
 {
 #ifndef NO_SSL
-	int i;
+	int i, total_locks;
 	
 	SSL_library_init();
 	SSL_load_error_strings();
@@ -50,10 +50,11 @@ libAPI void amy_init()
 
 #ifndef NO_THREADSAFE
 	
-	ssl_lock_group = (mowgli_mutex_t *)(calloc(CRYPTO_num_locks(), sizeof(mowgli_mutex_t)));
-	if(ssl_lock_group == NULL) alloc_error("OpenSSL lock group", CRYPTO_num_locks() * sizeof(mowgli_mutex_t));
-	for(i = 0; i < CRYPTO_num_locks(); i++)
-		mowgli_mutex_create(&(ssl_lock_group[i]));
+	total_locks = CRYPTO_num_locks();
+	ssl_lock_group = (mowgli_mutex_t *)(calloc(total_locks, sizeof(mowgli_mutex_t)));
+	if(ssl_lock_group == NULL) alloc_error("OpenSSL lock group", total_locks * sizeof(mowgli_mutex_t));
+	for(i = 0; i < total_locks; i++)
+		mowgli_mutex_create(ssl_lock_group[i]);
 
 	CRYPTO_set_locking_callback(amy_ssl_lockback);
 
@@ -76,7 +77,7 @@ libAPI void amy_clean()
 #ifndef NO_THREADSAFE
 
 	for(i = 0; i < CRYPTO_num_locks(); i++)
-		mowgli_mutex_destroy(&(ssl_lock_group[i]));
+		mowgli_mutex_destroy(ssl_lock_group[i]);
 
 	free(ssl_lock_group);
 #endif
