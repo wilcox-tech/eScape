@@ -1,14 +1,15 @@
 /*
  * OAuth.h - adds OAuth functionality to WTConnection
- * libAmy - Part of eScape
- * Wilcox Technologies
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
  *
- * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
  * License: NCSA-WT
  */
 
-#ifndef __LIBAMY__OAUTH_H__
-#define __LIBAMY__OAUTH_H__
+#ifndef __LIBAMY_OAUTH_H__
+#define __LIBAMY_OAUTH_H__
 
 #include "connect.h"
 
@@ -74,7 +75,7 @@ public:
 	 */
 	libAPI void * upload(const void *data, uint64_t *length);
 
-	libAPI ~WTOAuthConnection();
+	libAPI virtual ~WTOAuthConnection();
 private:
 	/*! The client credential ID */
 	const char *consumer_key;
@@ -93,4 +94,4 @@ private:
 	bool gen_sigbase_and_auth(const char *req_type = "GET", const void *data = NULL);
 };
 
-#endif /*!__AUCTIONS_COMMON_NETWORK_CONN_H_*/
+#endif /*!__LIBAMY_OAUTH_H__*/

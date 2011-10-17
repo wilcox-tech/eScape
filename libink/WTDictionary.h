@@ -1,19 +1,21 @@
 /*
  * WTDictionary.h - interface for C++ dictionary
- * General utility
- * Wilcox Technologies
+ * libInk, the glue holding together
+ * eScape
+ * Wilcox Technologies, LLC
  * 
- * Copyright (C) 2011 Wilcox Technologies.  Some rights reserved.
- * License: BSD
+ * Copyright (C) 2011 Wilcox Technologies, LLC.  Some rights reserved.
+ * License: NCSA-WT
  */
 
-#ifndef __WTDICTIONARY_H_
-#define __WTDICTIONARY_H_
+#ifndef __LIBINK_WTDICTIONARY_H__
+#define __LIBINK_WTDICTIONARY_H__
 
-#include <libmowgli/mowgli.h> // duh.
+#include <libmowgli/mowgli.h> // the mowgli_patricia backend.
+#include <Utility.h> //libAPI
 
 #ifndef MOWGLI_PATRICIA_ALLOWS_NULL_CANONIZE
-#	error Your libmowgli is too old.  Upgrade to 0.9.50 or higher.
+#	error Your libmowgli is too old.  Please upgrade to 0.9.50 or higher.
 #endif
 
 /*!
@@ -36,21 +38,22 @@ typedef struct buf_struct
 class WTDictionary
 {
 public:
-	WTDictionary(bool manage_memory = true);
-	~WTDictionary();
+	libAPI WTDictionary(bool manage_memory = true);
+	libAPI ~WTDictionary();
 	
-	const void *get(const char *);
-	void set(const char *, const void *);
+	libAPI const void *get(const char *);
+	libAPI void set(const char *, const void *);
 	
-	WTSizedBuffer *all(const char *fmt = NULL);
+	libAPI WTSizedBuffer *all(const char *fmt = NULL);
 	
-	size_t count;
+	libAPI const size_t count();
 	
 protected:
+	size_t _count;
 	bool manager;
 	mowgli_patricia_t *dict;
 	
 	mowgli_mutex_t access_mutex;
 };
 
-#endif/*!__WTDICTIONARY_H_*/
+#endif/*!__LIBINK_WTDICTIONARY_H__*/

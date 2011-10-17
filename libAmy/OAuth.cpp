@@ -1,22 +1,23 @@
 /*
- * OAuth.cpp - Internet socket / connection functionality
- * libAmy
- * Wilcox Technologies
+ * OAuth.cpp - implementation of OAuth routines
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
  *
- * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
  * License: NCSA-WT
  */
 
-#include "OAuth.h"
-#include <b64/encode.h>
-
-#include <Utility.h> // alloc_error, url<encode/decode>
-#include <string.h> // strcspn, strlen, strncpy
-#include <stdlib.h> // calloc, realloc, free
-#include <stdio.h>  // fprintf, stderr
-#include <ctype.h>  // tolower
-#include <errno.h>
-#include <limits.h> // ULLONG_MAX
+#include "OAuth.h"		// self
+#include <b64/encode.h>		// base64-encoding
+#include <uriparser/Uri.h>	// Used for decoding urlencoded forms
+#include <Utility.h>		// alloc_error, url<encode/decode>
+#include <string.h>		// strcspn, strlen, strncpy
+#include <stdlib.h>		// calloc, realloc, free
+#include <stdio.h>		// fprintf, stderr
+#include <ctype.h>		// tolower
+#include <errno.h>		// errnos
+#include <limits.h>		// ULLONG_MAX
 
 const char *sigmeth_enum_to_str(WTOAuthSigMethod method)
 {
@@ -65,9 +66,8 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	// 
 	// Create the Base String URI
 	base_uri = static_cast<char *>(calloc(uri_length, sizeof(char)));
+	if(base_uri == NULL) alloc_error("OAuth base string URI buffer", uri_length);
 	snprintf(base_uri, uri_length, "%s://%s%s", protocol, domain, uri);
-	
-	fprintf(stderr, "OAUTH DEBUG: Base String URI is %s\n", base_uri);
 	
 	
 	
@@ -75,16 +75,12 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	// Generate nonce and timestamp
 	timestamp_len = snprintf(NULL, 0, "%ld", time(NULL)) + 1;
 	timestamp = static_cast<char *>(calloc(timestamp_len, sizeof(char)));
+	if(timestamp == NULL) alloc_error("OAuth timestamp buffer", timestamp_len);
 	snprintf(timestamp, timestamp_len, "%ld", time(NULL));
-	
-	fprintf(stderr, "OAUTH DEBUG: Timestamp is %s\n", timestamp);
 	
 	srand(time(NULL));
 	snprintf(nonce, sizeof(nonce), "%02x%02x%02x%02x",
 		 rand() % 128, rand() % 128, rand() % 128, rand() % 128);
-	
-	fprintf(stderr, "OAUTH DEBUG: Nonce is %s\n", nonce);
-	fflush(stderr);
 	
 	
 	
@@ -114,7 +110,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 			next_param++;
 		}
 		
-		param_dict->set(strdup(name), (value == NULL ? strdup("") : strdup(value)));
+		param_dict->set(name, (value == NULL ? strdup("") : strdup(value)));
 		if(value != NULL) value[-1] = '=';
 		if(next_param != NULL) next_param[-1] = '&';
 	}
@@ -131,9 +127,6 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	
 	params = param_dict->all("%s=%s&");
 	
-	fprintf(stderr, "OAUTH DEBUG: Param string is %s\n", params->buffer);
-	fflush(stderr);
-	
 	
 	
 	// 
@@ -145,12 +138,11 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 				req_type, encoded_uri, enc_params);
 	sig_base_len++;
 	sig_base = static_cast<char *>(calloc(sig_base_len, sizeof(char)));
+	if(sig_base == NULL) alloc_error("OAuth signature base string buffer", sig_base_len);
 	snprintf(sig_base, sig_base_len, "%s&%s&%s",
 		 req_type, encoded_uri, enc_params);
-	
 	fprintf(stderr, "OAUTH DEBUG: Signature base string is %s\n", sig_base);
 	fflush(stderr);
-	
 	
 	
 	// 
@@ -158,8 +150,10 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	key_len = snprintf(NULL, 0, "%s&%s", (consumer_secret == NULL ? "" : consumer_secret), (token_secret == NULL ? "" : token_secret));
 	key_len++;
 	key = static_cast<char *>(calloc(key_len, sizeof(char)));
+	if(key == NULL) alloc_error("OAuth private key", key_len);
 	snprintf(key, key_len, "%s&%s", (consumer_secret == NULL ? "" : consumer_secret), (token_secret == NULL ? "" : token_secret));
 	signature = static_cast<unsigned char *>(calloc(EVP_MAX_MD_SIZE, sizeof(char)));
+	if(signature == NULL) alloc_error("OAuth HMAC signature buffer", EVP_MAX_MD_SIZE);
 	HMAC(EVP_sha1(), static_cast<const void *>(const_cast<const char *>(key)), key_len - 1, reinterpret_cast<const unsigned char *>(const_cast<const char *>(sig_base)), sig_base_len - 1, signature, &signature_len);
 	
 	
@@ -168,12 +162,10 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	// base64-encode it!  I love OAuth!
 	// You think this is bad?  Wait til you see the auth header code below.
 	b64_sig = static_cast<char *>(calloc(b64_sig_len, sizeof(char)));
+	if(b64_sig == NULL) alloc_error("base64 buffer", b64_sig_len);
 	base64::encoder b64encoder;
 	b64_sig_len = b64encoder.encode(reinterpret_cast<const char *>(signature), signature_len, b64_sig);
 	b64encoder.encode_end(b64_sig + b64_sig_len);
-	
-	fprintf(stderr, "OAUTH DEBUG: Signature is %s and probably wrong\n", b64_sig);
-	fflush(stderr);
 	
 	
 	
@@ -187,6 +179,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 				   enc_b64_sig);
 	auth_header_len++;
 	auth_header = static_cast<char *>(calloc(auth_header_len, sizeof(char)));
+	if(auth_header == NULL) alloc_error("HTTP Authorization buffer", auth_header_len);
 	snprintf(auth_header, auth_header_len, "OAuth Realm=\"\",%s%s%s oauth_nonce=\"%s\", oauth_signature_method=\"%s\", oauth_timestamp=\"%s\",%s%s%s oauth_version=\"1.0\", oauth_signature=\"%s\"",
 		 (consumer_key == NULL ? "" : " oauth_consumer_key=\""), (consumer_key == NULL ? "" : consumer_key), (consumer_key == NULL ? "" : "\","),
 		 nonce, sigmeth_enum_to_str(sig_method), timestamp,
@@ -198,6 +191,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	free(auth_header);
 	free(signature);
 	free(key);
+	free(params);
 	free(sig_base);
 	free(timestamp);
 	free(base_uri);

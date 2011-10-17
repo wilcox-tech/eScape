@@ -1,9 +1,10 @@
 /*
  * amy_init.c - Initialisation routines
- * libAmy - Internet socket functionality
- * Wilcox Technologies
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
  *
- * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
  * License: NCSA-WT
  */
 
@@ -50,6 +51,7 @@ libAPI void amy_init()
 #ifndef NO_THREADSAFE
 	
 	ssl_lock_group = (mowgli_mutex_t *)(calloc(CRYPTO_num_locks(), sizeof(mowgli_mutex_t)));
+	if(ssl_lock_group == NULL) alloc_error("OpenSSL lock group", CRYPTO_num_locks() * sizeof(mowgli_mutex_t));
 	for(i = 0; i < CRYPTO_num_locks(); i++)
 		mowgli_mutex_create(&(ssl_lock_group[i]));
 

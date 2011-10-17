@@ -1,9 +1,10 @@
 /*
- * connect.cpp - Internet socket / connection functionality
- * libAmy
- * Wilcox Technologies
+ * connect.cpp - implementation of Internet socket / connection functionality
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
  *
- * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
  * License: NCSA-WT
  */
 
@@ -192,7 +193,7 @@ bool WTConnection::parse_url(const char *url)
 		this->uri[length] = '\0';
 		this->query_string = strchr(uri, static_cast<int>('?'));
 	};
-
+	
 	return true;
 }
 
@@ -352,14 +353,23 @@ void WTConnection::disconnect(void)
 		this->addr_info = NULL;
 	};
 
-	free(this->uri);
-	this->uri = NULL;
+	if(this->uri != NULL)
+	{
+		free(this->uri);
+		this->uri = NULL;
+	};
 
-	free(this->domain);
-	this->domain = NULL;
+	if(this->domain != NULL)
+	{
+		free(this->domain);
+		this->domain = NULL;
+	};
 
-	free(this->protocol);
-	this->protocol = NULL;
+	if(this->protocol != NULL)
+	{
+		free(this->protocol);
+		this->protocol = NULL;
+	};
 }
 
 const char *WTConnection::get_last_error(void)

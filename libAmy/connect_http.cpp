@@ -1,15 +1,19 @@
-//
-//  connect_http.cpp
-//  libAmy
-//
-//  Created by Andrew Wilcox on 8/14/11.
-//  Copyright 2011 Wilcox Technologies LLC. All rights reserved.
-//
+/*
+ * connect_http.cpp - implementation of HTTP-specific connection routines
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
+ *
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
+ * License: NCSA-WT
+ */
 
 #include "connect.h"
 #include <libink/WTDictionary.h>
 #include <Utility.h>
 #include <assert.h>
+
+#define HTTP_BLOCK_SIZE 512
 
 #ifndef NO_SSL
 #	define SET_THE_ERROR \
@@ -162,6 +166,7 @@ void *parse_http_response(const char *resp, uint16_t *http_code, uint64_t *lengt
 			};
 			
 			return_buffer = static_cast<char *>(realloc(return_buffer, sizeof(char) * ++total_size));
+			if(return_buffer == NULL) alloc_error("HTTP response buffer", total_size);
 			return_buffer[total_size - 1] = '\0';
 			
 			*length = total_size;
@@ -171,6 +176,7 @@ void *parse_http_response(const char *resp, uint16_t *http_code, uint64_t *lengt
 			resp += start_of_data;
 			*length = strlen(resp) + 1;
 			return_buffer = static_cast<char *>(calloc(*length, sizeof(char)));
+			if(return_buffer == NULL) alloc_error("HTTP response buffer", *length);
 			memcpy(return_buffer, resp, *length);
 		};
 	}
@@ -178,6 +184,7 @@ void *parse_http_response(const char *resp, uint16_t *http_code, uint64_t *lengt
 	{
 		*length = strtol(content_length, NULL, 10);
 		return_buffer = static_cast<char *>(calloc(*length + 1, sizeof(char)));
+		if(return_buffer == NULL) alloc_error("HTTP response buffer", *length);
 		memcpy(return_buffer, resp + start_of_data, *length);
 		return_buffer[*length] = '\0';
 	};
@@ -201,7 +208,7 @@ void WTConnection::http_header(const char *header, char *data)
 bool WTConnection::connect_https(void)
 {
 #ifndef NO_SSL
-	this->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+	if(this->ssl_ctx == NULL) this->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 	this->ssl_socket = BIO_new_ssl_connect(this->ssl_ctx);
 	BIO_get_ssl(this->ssl_socket, &ssl);
 	SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
@@ -238,7 +245,7 @@ bool WTConnection::connect_https(void)
 	
 	if(SSL_get_verify_result(ssl) != X509_V_OK)
 	{
-		fprintf(stderr, "BUG: Invalid certificate; CONTINUING ANYWAY\n");
+		//fprintf(stderr, "BUG: Invalid certificate; CONTINUING ANYWAY\n");
 		//	BIO_free_all(this->ssl_socket);
 		//	SSL_CTX_free(this->ssl_ctx);
 		//	delegate_status(WTHTTP_Error);
@@ -263,7 +270,7 @@ bool WTConnection::connect_https(void)
 
 void *WTConnection::download_http(uint64_t *length)
 {
-	char *request = NULL, *header_str = NULL;
+	char *request = NULL, *header_str = NULL, *response = NULL;
 	size_t size_of_req = 0, req_sent = 0;
 	WTSizedBuffer *header_buff;
 	bool is_ssl, did_send;
@@ -303,7 +310,7 @@ void *WTConnection::download_http(uint64_t *length)
 	size_of_req = ( (15 /* GET  HTTP/1.1\r\n */
 			 + strlen(this->uri)
 			 + (header_buff->buffer_len) /* All headers */
-			 + (this->headers->count * 2) /* \r\n for each header */
+			 + (this->headers->count() * 2) /* \r\n for each header */
 			 + 4 /* \r\n for end of headers */) * sizeof(char));
 	
 	request = static_cast<char *>(malloc(size_of_req));
@@ -313,10 +320,6 @@ void *WTConnection::download_http(uint64_t *length)
 	req_sent = snprintf(request, size_of_req, "GET %s HTTP/1.1%s\r\n\r\n", this->uri, header_str);
 	free(header_str);
 	free(header_buff);
-	
-	char *response = static_cast<char *>(calloc(128, sizeof(char)));
-	if(response == NULL)
-		alloc_error("response buffer", 128);
 	
 	delegate_status(WTHTTP_Transferring);
 	printf("< %s", request);
@@ -345,16 +348,17 @@ void *WTConnection::download_http(uint64_t *length)
 	
 	while(1)
 	{
-		response = static_cast<char *>(realloc(response, total+128));
+		response = static_cast<char *>(realloc(response, total+HTTP_BLOCK_SIZE));
+		if(response == NULL) alloc_error("HTTP response buffer", total+HTTP_BLOCK_SIZE);
 		int read;
 		
 #ifndef NO_SSL
 		if (is_ssl)
 		{
-			read = BIO_read(this->ssl_socket, (response+total), 128);
+			read = BIO_read(this->ssl_socket, (response+total), HTTP_BLOCK_SIZE);
 		} else {
 #endif
-			read = recv(this->socket, (response+total), 128, 0);
+			read = recv(this->socket, (response+total), HTTP_BLOCK_SIZE, 0);
 #ifndef NO_SSL
 		}
 #endif
@@ -398,7 +402,7 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 	size_t size_of_initial;
 	char str_size_of_data[64];		// XXX magic number
 	size_t data_sent, initial_sent;
-	char *initial_crap;
+	char *initial_crap, *response = NULL;
 	char *header_str;
 	WTSizedBuffer *header_buff;
 	bool sent_initial, sent_data;
@@ -461,7 +465,7 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 			     + 16 /*strlen("Content-length: ") */
 			     + strlen(str_size_of_data)
 			     + header_buff->buffer_len /* All headers */
-			     + (this->headers->count * 2) /* \r\n for each header */
+			     + (this->headers->count() * 2) /* \r\n for each header */
 			     + 2 /* \r\n for end of headers */
 			     + 2 /* \r\n for beginning of data */) * sizeof(char));
 	
@@ -475,10 +479,6 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 		
 	free(header_str);
 	free(header_buff);
-	
-	char *response = static_cast<char *>(calloc(128, sizeof(char)));
-	if(response == NULL)
-		alloc_error("response buffer", 128);
 	
 	delegate_status(WTHTTP_Transferring);
 	
@@ -515,18 +515,18 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 	
 	while(1)
 	{
-		response = static_cast<char *>(realloc(response, total+128));
+		response = static_cast<char *>(realloc(response, total+HTTP_BLOCK_SIZE));
 		int read;
 		
 #ifndef NO_SSL
 		if(is_ssl)
 		{
-			read = BIO_read(this->ssl_socket, (response+total), 128);
+			read = BIO_read(this->ssl_socket, (response+total), HTTP_BLOCK_SIZE);
 		}
 		 else
 		{
 #endif
-			read = recv(this->socket, (response+total), 128, 0);
+			read = recv(this->socket, (response+total), HTTP_BLOCK_SIZE, 0);
 #ifndef NO_SSL
 		}
 #endif

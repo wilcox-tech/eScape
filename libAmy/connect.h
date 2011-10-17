@@ -1,14 +1,15 @@
 /*
- * WTConnection.h - Network functionality
- * General purpose (Originally Auctions)
- * Wilcox Technologies
+ * connect.h - interface for Internet socket / connection functionality
+ * libAmy, the Web as seen by
+ * eScape
+ * Wilcox Technologies, LLC
  *
- * Copyright (c) 2011 Wilcox Technologies. All rights reserved.
- * License: internal use only
+ * Copyright (c) 2011 Wilcox Technologies, LLC. All rights reserved.
+ * License: NCSA-WT
  */
 
-#ifndef __AUCTIONS_COMMON_NETWORK_CONN_H_
-#define __AUCTIONS_COMMON_NETWORK_CONN_H_
+#ifndef __LIBAMY_CONN_H__
+#define __LIBAMY_CONN_H__
 
 #ifndef NO_SSL
 #	include <openssl/ssl.h>
@@ -24,7 +25,9 @@
 #include <libink/WTDictionary.h>
 #include <Utility.h>
 
-#include <stdint.h>
+#ifndef WIN32
+#	include <stdint.h>
+#endif
 
 #define delegate_status(status) \
 	if(this->delegate != NULL)\
@@ -103,7 +106,7 @@ public:
 	 */
 	libAPI void http_header(const char *header, char *data);
 
-	libAPI ~WTConnection();
+	libAPI virtual ~WTConnection();
 	
 	/*!
 	@brief		Retrieve the last error.
@@ -158,4 +161,4 @@ private:
 	void *download_http(uint64_t *length);
 };
 
-#endif /*!__AUCTIONS_COMMON_NETWORK_CONN_H_*/
+#endif /*!__LIBAMY_CONNECT_H__*/
