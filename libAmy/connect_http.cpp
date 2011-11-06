@@ -208,7 +208,7 @@ void WTConnection::http_header(const char *header, char *data)
 bool WTConnection::connect_https(void)
 {
 #ifndef NO_SSL
-	if(this->ssl_ctx == NULL) this->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+	this->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 	this->ssl_socket = BIO_new_ssl_connect(this->ssl_ctx);
 	BIO_get_ssl(this->ssl_socket, &ssl);
 	SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
@@ -290,18 +290,27 @@ void *WTConnection::download_http(uint64_t *length)
 	{
 		this->headers = new WTDictionary;
 	};
-	
-	if(this->headers->get("User-Agent") == NULL)
+		if(this->headers->get("User-Agent") == NULL)
 	{
 		this->headers->set("User-Agent", strdup("Mozilla/4.0 (compatible; "
 							OSNAME
 							"; U; en-GB) eScapeCore/0.1.0"
 							EXTRA_UA));
 	};
-	
-	if(this->headers->get("Host") == NULL)
+	if(this->headers->get("Connection") == NULL)
 	{
-		this->headers->set("Host", strdup(this->domain));
+		this->headers->set("Connection", strdup("Close"));
+	};
+	this->headers->set("Host", strdup(this->domain));
+	// we don't HAVE a content-type for GET requests
+	this->headers->set("Content-type", NULL);
+	
+	if(!this->connected)
+	{
+		fprintf(stderr, "WTConnection: download before connect!  (order error)\n");
+		last_error = "You must be connected to download data.";
+		delegate_status(WTHTTP_Error);
+		return NULL;
 	};
 	
 	header_buff = this->headers->all();
@@ -322,7 +331,6 @@ void *WTConnection::download_http(uint64_t *length)
 	free(header_buff);
 	
 	delegate_status(WTHTTP_Transferring);
-	printf("< %s", request);
 #ifndef NO_SSL
 	if (is_ssl)
 	{
@@ -380,7 +388,6 @@ void *WTConnection::download_http(uint64_t *length)
 		};
 		total += read;
 	};
-	printf("> %s", response);
 	uint16_t http_code = 0;
 	void *ret = parse_http_response(response, &http_code, length);
 	// TODO: Deal with 3xx codes
@@ -431,10 +438,7 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 							"; U; en-GB) eScapeCore/0.1.0"
 							EXTRA_UA));
 	};
-	if(this->headers->get("Host") == NULL)
-	{
-		this->headers->set("Host", strdup(this->domain));
-	};
+	this->headers->set("Host", strdup(this->domain));
 	if(this->headers->get("Connection") == NULL)
 	{
 		this->headers->set("Connection", strdup("Close"));
@@ -486,11 +490,11 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 	if(is_ssl)
 	{
 		sent_initial = sendall_ssl(this->ssl_socket, initial_crap, &initial_sent);
-		if(sent_initial) sent_data = sendall_ssl(this->ssl_socket, static_cast<const char *>(data), &data_sent);
+		if(sent_initial > 0) sent_data = sendall_ssl(this->ssl_socket, static_cast<const char *>(data), &data_sent);
 	} else {
 #endif
 		sent_initial = sendall(this->socket, initial_crap, &initial_sent);
-		if(sent_initial) sent_data = sendall(this->socket, static_cast<const char *>(data), &data_sent);
+		if(sent_initial > 0) sent_data = sendall(this->socket, static_cast<const char *>(data), &data_sent);
 #ifndef NO_SSL
 	}
 #endif

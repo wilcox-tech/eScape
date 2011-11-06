@@ -53,7 +53,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 		strncpy(stripped_uri, uri, stripped_len);
 		stripped_uri[stripped_len] = '\0';
 	} else {
-		stripped_uri = uri;
+		stripped_uri = strdup(uri);
 		stripped_len = strlen(uri);
 	}
 	
@@ -103,7 +103,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 		
 		name = next_param;
 		
-		next_param = strchr(next_param, static_cast<int>('&'));
+		next_param = strchr(value, static_cast<int>('&'));
 		if(next_param != NULL)
 		{
 			next_param[0] = '\0';	// Terminate the value (or name)
@@ -134,6 +134,9 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	params->buffer[params->buffer_len - 2] = '\0';	// remove trailing &
 	encoded_uri = URLEncode(base_uri);
 	enc_params = URLEncode(params->buffer);
+	free(params->buffer);
+	free(params);
+	params = NULL;
 	sig_base_len = snprintf(NULL, 0, "%s&%s&%s",
 				req_type, encoded_uri, enc_params);
 	sig_base_len++;
@@ -172,6 +175,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	// 
 	// Authorization[sic.] header
 	enc_b64_sig = URLEncode(b64_sig);
+	free(b64_sig);
 	auth_header_len = snprintf(NULL, 0, "OAuth Realm=\"\",%s%s%s oauth_nonce=\"%s\", oauth_signature_method=\"%s\", oauth_timestamp=\"%s\",%s%s%s oauth_version=\"1.0\", oauth_signature=\"%s\"",
 				   (consumer_key == NULL ? "" : " oauth_consumer_key=\""), (consumer_key == NULL ? "" : consumer_key), (consumer_key == NULL ? "" : "\","),
 				   nonce, sigmeth_enum_to_str(sig_method), timestamp,
@@ -191,13 +195,13 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	free(auth_header);
 	free(signature);
 	free(key);
-	free(params);
 	free(sig_base);
 	free(timestamp);
 	free(base_uri);
 	free(enc_params);
 	free(encoded_uri);
 	free(enc_b64_sig);
+	free(stripped_uri);
 	
 	delete param_dict;
 	
@@ -224,10 +228,14 @@ libAPI bool WTOAuthConnection::oauth_set_params(const char *_consumer_key,
 						const char *_token_secret,
 						WTOAuthSigMethod _sig_method)
 {
-	this->consumer_key = _consumer_key;
-	this->consumer_secret = _consumer_secret;
-	this->token = _token;
-	this->token_secret = _token_secret;
+	free(const_cast<char *>(consumer_key));
+	free(const_cast<char *>(consumer_secret));
+	free(const_cast<char *>(token));
+	free(const_cast<char *>(token_secret));
+	this->consumer_key = (_consumer_key ? strdup(_consumer_key) : NULL);
+	this->consumer_secret = (_consumer_secret ? strdup(_consumer_secret) : NULL);
+	this->token = (_token ? strdup(_token) : NULL);
+	this->token_secret = (_token_secret ? strdup(_token_secret) : NULL);
 	this->sig_method = _sig_method;
 	
 	return true;
@@ -235,8 +243,13 @@ libAPI bool WTOAuthConnection::oauth_set_params(const char *_consumer_key,
 
 WTOAuthConnection::WTOAuthConnection(WTConnDelegate *_delegate) : WTConnection(_delegate)
 {
+	consumer_key = consumer_secret = token = token_secret = NULL;
 }
 
 WTOAuthConnection::~WTOAuthConnection()
 {
+	free(const_cast<char *>(this->consumer_key));
+	free(const_cast<char *>(this->consumer_secret));
+	free(const_cast<char *>(this->token));
+	free(const_cast<char *>(this->token_secret));
 }
