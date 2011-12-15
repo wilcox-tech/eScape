@@ -42,6 +42,10 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	char *b64_sig;  size_t b64_sig_len = 28; char *enc_b64_sig;
 	char *auth_header; size_t auth_header_len;
 	
+	//
+	// Ensure we are needed/wanted
+	if(consumer_key == NULL && token == NULL) return false;
+	
 	
 	// 
 	// Calculate the length of the URI string
@@ -67,7 +71,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	// Create the Base String URI
 	base_uri = static_cast<char *>(calloc(uri_length, sizeof(char)));
 	if(base_uri == NULL) alloc_error("OAuth base string URI buffer", uri_length);
-	snprintf(base_uri, uri_length, "%s://%s%s", protocol, domain, uri);
+	snprintf(base_uri, uri_length, "%s://%s%s", protocol, domain, stripped_uri);
 	
 	
 	
@@ -144,7 +148,7 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	if(sig_base == NULL) alloc_error("OAuth signature base string buffer", sig_base_len);
 	snprintf(sig_base, sig_base_len, "%s&%s&%s",
 		 req_type, encoded_uri, enc_params);
-	fprintf(stderr, "OAUTH DEBUG: Signature base string is %s\n", sig_base);
+	//fprintf(stderr, "OAUTH DEBUG: Signature base string is %s\n", sig_base);
 	fflush(stderr);
 	
 	

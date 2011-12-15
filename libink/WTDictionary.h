@@ -13,10 +13,13 @@
 
 #include <libmowgli/mowgli.h> // the mowgli_patricia backend.
 #include <Utility.h> //libAPI
+#include <vector>
 
 #ifndef MOWGLI_PATRICIA_ALLOWS_NULL_CANONIZE
 #	error Your libmowgli is too old.  Please upgrade to 0.9.50 or higher.
 #endif
+
+using std::vector;
 
 /*!
 	@brief		sized buffer
@@ -44,6 +47,9 @@ public:
 	libAPI const void *get(const char *);
 	libAPI void set(const char *, const void *);
 	
+	libAPI const char **allKeys(void);
+	libAPI const void **allValues(void);
+	
 	libAPI WTSizedBuffer *all(const char *fmt = NULL);
 	
 	libAPI const size_t count();
@@ -51,9 +57,15 @@ public:
 protected:
 	size_t _count;
 	bool manager;
+	bool vectors_valid;
 	mowgli_patricia_t *dict;
+	vector<const char *> keys;
+	vector<const void *> values;
 	
 	mowgli_mutex_t access_mutex;
+	friend int fill_my_vector(const char *,void*,void*);
+	
+	void reloadVectors();
 };
 
 #endif/*!__LIBINK_WTDICTIONARY_H__*/

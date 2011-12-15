@@ -27,6 +27,7 @@ libAPI WTDictionary::WTDictionary(bool manage_memory)
 	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 	this->_count = 0;
 	this->manager = manage_memory;
+	this->vectors_valid = true;
 }
 
 void tear_down(const char *key UNUSED, void *data, void *privdata UNUSED)
@@ -54,6 +55,7 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 		mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 		mowgli_patricia_add(this->dict, key, const_cast<void *>(value));
 		++(this->_count);
+		this->vectors_valid = false;
 		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 		return;
 	}
@@ -76,6 +78,7 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 			mowgli_patricia_add(this->dict, key, const_cast<void *>(value));
 			++(this->_count);
 		};
+		this->vectors_valid = false;
 		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 		
 		return;
@@ -95,6 +98,47 @@ libAPI const void *WTDictionary::get(const char *key)
 	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 	
 	return value;
+}
+
+int fill_my_vector(const char *key, void *data, void *privdata)
+{
+	WTDictionary *dict = reinterpret_cast<WTDictionary *>(privdata);
+	if(key || data) return -1;
+	dict->keys.push_back(key);
+	dict->values.push_back(data);
+	return 0;
+}
+
+void WTDictionary::reloadVectors(void)
+{
+	if(!this->vectors_valid)
+	{
+		keys.clear();
+		values.clear();
+		mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
+		mowgli_patricia_foreach(this->dict, &fill_my_vector, this);
+		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));	
+	};
+	
+	return;
+}
+
+libAPI const char **WTDictionary::allKeys(void)
+{
+	const char **key_array = static_cast<const char **>(calloc(_count,sizeof(const char *)));
+	reloadVectors();
+	for(unsigned int key = 0; key < _count; key++)
+		key_array[key] = keys.at(key);
+	return key_array;
+}
+
+libAPI const void **WTDictionary::allValues(void)
+{
+	const void **value_array = static_cast<const void **>(calloc(_count,sizeof(const void *)));
+	reloadVectors();
+	for(unsigned int value = 0; value < _count; value++)
+		value_array[value] = values.at(value);
+	return value_array;
 }
 
 libAPI const size_t WTDictionary::count(void)

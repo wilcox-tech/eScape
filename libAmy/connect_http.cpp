@@ -393,7 +393,7 @@ void *WTConnection::download_http(uint64_t *length)
 	// TODO: Deal with 3xx codes
 	if(http_code >= 400)
 	{
-		last_error = "HTTP server was Not OK";
+		last_error = "Please try again later.";
 		delegate_status(WTHTTP_Error);
 	}
 	else
@@ -566,7 +566,7 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 	// TODO: Deal with 3xx codes
 	if(http_code >= 400)
 	{
-		last_error = "HTTP server was Not OK";
+		last_error = "Please try again later.";
 		delegate_status(WTHTTP_Error);
 	}
 	else
