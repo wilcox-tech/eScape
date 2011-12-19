@@ -284,6 +284,7 @@ bool WTConnection::connect(const char *url)
 	};
 
 	this->connected = true;
+	this->connecting = false;
 	delegate_status(WTHTTP_Connected);
 
 	return true;
@@ -379,7 +380,7 @@ const char *WTConnection::get_last_error(void)
 
 WTConnection::WTConnection(WTConnDelegate *_delegate)
 {
-	this->connected = false;
+	this->connected = this->connecting = false;
 	this->delegate = _delegate;
 
 	domain	= NULL;
