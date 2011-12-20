@@ -103,7 +103,7 @@ libAPI const void *WTDictionary::get(const char *key)
 int fill_my_vector(const char *key, void *data, void *privdata)
 {
 	WTDictionary *dict = reinterpret_cast<WTDictionary *>(privdata);
-	if(key || data) return -1;
+	if(!key || !data) return -1;
 	dict->keys.push_back(key);
 	dict->values.push_back(data);
 	return 0;
@@ -118,6 +118,7 @@ void WTDictionary::reloadVectors(void)
 		mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 		mowgli_patricia_foreach(this->dict, &fill_my_vector, this);
 		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));	
+		this->vectors_valid = true;
 	};
 	
 	return;
