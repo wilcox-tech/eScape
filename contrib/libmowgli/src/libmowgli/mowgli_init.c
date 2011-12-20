@@ -31,6 +31,7 @@ void mowgli_init(void)
 		return;
 
 	/* initial bootstrap */
+	mowgli_thread_init();
 	mowgli_node_init();
 	mowgli_queue_init();
 	mowgli_argstack_init();

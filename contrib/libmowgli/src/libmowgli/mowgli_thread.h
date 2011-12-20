@@ -47,6 +47,7 @@ int mowgli_mutex_lock(mowgli_mutex_t *mutex);
 int mowgli_mutex_trylock(mowgli_mutex_t *mutex);
 int mowgli_mutex_unlock(mowgli_mutex_t *mutex);
 int mowgli_mutex_destroy(mowgli_mutex_t *mutex);
+void mowgli_thread_init();
 
 
 #endif /* !__MOWGLI_THREAD_H__ */

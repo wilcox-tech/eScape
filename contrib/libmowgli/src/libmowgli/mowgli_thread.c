@@ -64,6 +64,12 @@ int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
 }
 
 
+void mowgli_thread_init(void)
+{
+	return;
+}
+
+
 /*************
  * This implements native Sun/UnixWare threads.  Some other SVR4-based
  * environments attempted to make work-alikes, but those aren't guaranteed
@@ -75,7 +81,7 @@ int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
 
 int mowgli_mutex_create(mowgli_mutex_t *mutex)
 {
-	return mutex_init(mutex, USYNC_THREAD, NULL);
+	return mutex_init(mutex, USYNC_THREAD | LOCK_RECURSIVE, NULL);
 }
 
 int mowgli_mutex_lock(mowgli_mutex_t *mutex)
@@ -99,6 +105,12 @@ int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
 }
 
 
+void mowgli_thread_init(void)
+{
+	
+}
+
+
 /*************
  * This "default" implementation uses pthreads.  Care has been taken to
  * ensure it runs on POSIX 1003.4a (draft 4, aka DECthreads, aka what OSF/1,
@@ -110,10 +122,11 @@ int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
  *************/
 #else
 
+static pthread_mutexattr_t attr;
 
 int mowgli_mutex_create(mowgli_mutex_t *mutex)
 {
-	return pthread_mutex_init(mutex, NULL);
+	return pthread_mutex_init(mutex, &attr);
 }
 
 int mowgli_mutex_lock(mowgli_mutex_t *mutex)
@@ -134,6 +147,12 @@ int mowgli_mutex_unlock(mowgli_mutex_t *mutex)
 int mowgli_mutex_destroy(mowgli_mutex_t *mutex)
 {
 	return pthread_mutex_destroy(mutex);
+}
+
+void mowgli_thread_init(void)
+{
+	pthread_mutexattr_init(&attr);
+	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 }
 
 
