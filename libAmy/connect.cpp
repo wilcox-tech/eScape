@@ -319,6 +319,16 @@ void *WTConnection::upload(const void *data, uint64_t *length)
 	};
 }
 
+void *WTConnection::store(const void *data, uint64_t *length)
+{
+	if(strcmp("http", this->protocol) == 0 || strcmp("https", this->protocol) == 0)
+	{
+		return put_http(data, length);
+	} else {
+		return upload(data, length);
+	};
+}
+
 void WTConnection::disconnect(void)
 {
 	if(!this->connecting && !this->connected)

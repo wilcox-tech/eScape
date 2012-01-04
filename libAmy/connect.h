@@ -97,6 +97,14 @@ public:
 	@param		length	The length of the result. (In/Out)
 	 */
 	libAPI virtual void * upload(const void *data, uint64_t *length);
+	/*!
+	@brief		Store data to the URL connected to.
+	@param		data	The data to put. (In)
+	@param		lenth	The length of the result. (In/Out)
+	@notes		This is the same as upload() for FTP.  For HTTP, this
+			uses the PUT verb instead of the POST verb.
+	 */
+	libAPI virtual void * store(const void *data, uint64_t *length);
 
 	/*!
 	@brief		Set a header (HTTP only).
@@ -159,6 +167,8 @@ private:
 	
 	void *upload_http(const void *data, uint64_t *length);
 	void *download_http(uint64_t *length);
+	void *put_http(const void *data, uint64_t *length);
+	void *upload_internal_http(const char *verb, const void *data, uint64_t *length);
 };
 
 #endif /*!__LIBAMY_CONNECT_H__*/

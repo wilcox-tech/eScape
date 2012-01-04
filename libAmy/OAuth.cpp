@@ -226,6 +226,12 @@ void * WTOAuthConnection::upload(const void *data, uint64_t *length)
 	return WTConnection::upload(data, length);
 }
 
+void * WTOAuthConnection::store(const void *data, uint64_t *length)
+{
+	gen_sigbase_and_auth("PUT", data);
+	return WTConnection::store(data, length);
+}
+
 libAPI bool WTOAuthConnection::oauth_set_params(const char *_consumer_key,
 						const char *_consumer_secret,
 						const char *_token,

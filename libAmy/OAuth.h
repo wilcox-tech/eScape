@@ -74,6 +74,7 @@ public:
 	@param		length	The length of the data and result. (In/Out)
 	 */
 	libAPI void * upload(const void *data, uint64_t *length);
+	libAPI void * store(const void *data, uint64_t *length);
 
 	libAPI virtual ~WTOAuthConnection();
 private:

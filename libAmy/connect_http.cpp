@@ -406,6 +406,16 @@ void *WTConnection::download_http(uint64_t *length)
 
 void *WTConnection::upload_http(const void *data, uint64_t *length)
 {
+	return upload_internal_http("POST", data, length);
+}
+
+void *WTConnection::put_http(const void *data, uint64_t *length)
+{
+	return upload_internal_http("PUT", data, length);
+}
+
+void *WTConnection::upload_internal_http(const char *verb, const void *data, uint64_t *length)
+{
 	size_t size_of_initial;
 	char str_size_of_data[64];		// XXX magic number
 	size_t data_sent, initial_sent;
@@ -478,8 +488,8 @@ void *WTConnection::upload_http(const void *data, uint64_t *length)
 		alloc_error("initial headers", size_of_initial);
 	
 	initial_sent = snprintf(initial_crap, size_of_initial,
-		 "POST %s HTTP/1.1%s\r\nContent-Length: %s\r\n\r\n",
-		 this->uri, header_str, str_size_of_data);
+		 "%s %s HTTP/1.1%s\r\nContent-Length: %s\r\n\r\n",
+		 verb, this->uri, header_str, str_size_of_data);
 		
 	free(header_str);
 	free(header_buff);
