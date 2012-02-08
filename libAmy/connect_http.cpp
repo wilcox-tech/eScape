@@ -221,6 +221,7 @@ bool WTConnection::connect_https(void)
 		last_error = ERR_error_string(ERR_get_error(), NULL);
 		fprintf(stderr, "SSL error: %s\n", last_error);
 		delegate_status(WTHTTP_Error);
+		this->connecting = false;
 		return false;
 	};
 	if(BIO_do_connect(this->ssl_socket) <= 0)
@@ -231,6 +232,7 @@ bool WTConnection::connect_https(void)
 		fprintf(stderr, "Couldn't connect to %s %d: %s\n",
 			this->domain, this->port, last_error);
 		delegate_status(WTHTTP_Error);
+		this->connecting = false;
 		return false;
 	};
 	if(BIO_do_handshake(this->ssl_socket) != 1)
@@ -240,6 +242,7 @@ bool WTConnection::connect_https(void)
 		last_error = ERR_error_string(ERR_get_error(), NULL);
 		fprintf(stderr, "Handshake failed: %s\n", last_error);
 		delegate_status(WTHTTP_Error);
+		this->connecting = false;
 		return false;
 	};
 	
@@ -264,6 +267,7 @@ bool WTConnection::connect_https(void)
 	free(this->protocol); this->protocol = NULL;
 	last_error = "SSL/TLS is disabled.  Your version of libamy can't use https.";
 	delegate_status(WTHTTP_Error);
+	this->connecting = false;
 	return false;
 #endif
 }

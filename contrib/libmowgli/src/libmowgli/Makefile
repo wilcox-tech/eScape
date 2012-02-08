@@ -34,6 +34,7 @@ SRCS = mowgli_alloc.c			\
        mowgli_signal.c			\
        mowgli_spinlock.c		\
        mowgli_string.c			\
+       mowgli_thread.c			\
 
 INCLUDES = mowgli.h			\
 	   mowgli_alloc.h		\
@@ -69,7 +70,8 @@ INCLUDES = mowgli.h			\
 	   mowgli_signal.h		\
 	   mowgli_spinlock.h		\
 	   mowgli_stdinc.h		\
-	   mowgli_string.h
+	   mowgli_string.h		\
+           mowgli_thread.h		\
 
 include ../../buildsys.mk
 
