@@ -27,8 +27,11 @@ using std::vector;
  */
 typedef struct buf_struct
 {
+	/*! The string buffer */
 	char *buffer;
+	/*! The length of the string buffer, not including the \0 terminator */
 	size_t buffer_len;
+	/*! The format string used to create the string buffer. */
 	const char *fmt;
 } WTSizedBuffer;
 
@@ -41,17 +44,84 @@ typedef struct buf_struct
 class WTDictionary
 {
 public:
+	/*!
+	@brief		Construct a new, empty dictionary.
+	@param		manage_memory	If this is set, all values will be
+					free()d upon deletion of the dictionary.
+	@result		A new, empty WTDictionary object.
+	 */
 	libAPI WTDictionary(bool manage_memory = true);
+	/*!
+	@brief		Construct a new dictionary, copying the contents of an
+			old dictionary.
+	@param		old		The old dictionary to copy keys and
+					values from.
+	@result		A new dictionary with the same keys/values as the old
+			dictionary.  Note that this dictionary will
+			automatically inherit the old dictionary's memory
+			management flag.
+	 */
+	libAPI WTDictionary(const WTDictionary &old);
 	libAPI ~WTDictionary();
 	
-	libAPI const void *get(const char *);
-	libAPI void set(const char *, const void *);
+	/*!
+	@brief		Retrieve a value for a specified key.
+	@param		key		The key to retrieve the value for.
+	@result		The value associated with key, or NULL if the key does
+			not exist.
+	 */
+	libAPI const void *get(const char *key);
+	/*!
+	@brief		Set the value of a specified key.
+	@param		key		The key to set the value for.
+	@param		data		The new value of the key.
+	@details	This method sets the value of the key specified to the
+			value specified in data.  If the key already existed,
+			the old value is discarded (and free()d if the memory
+			management flag is set).
+	 */
+	libAPI void set(const char *key, const void *data);
 	
+	/*!
+	@brief		Retrieve all keys in the dictionary.
+	@result		An array of the keys from this dictionary.  Use the
+			::count method to determine the number of keys in the
+			dictionary for iteration.
+	 @note		The allKeys and allValues methods will cache their
+			results for future calls to avoid overhead.  Subsequent
+			calls will return immediately as long as the dictionary
+			is not modified.
+	 */
 	libAPI const char **allKeys(void);
+	/*!
+	@brief		Retrieve all values in the dictionary.
+	@result		An array of the values from this dictionary.  As long as
+			no other thread modifies the dictionary between calls,
+			these values will match the keys found in ::allKeys.
+	@note		The allKeys and allValues methods will cache their
+			results for future calls to avoid overhead.  Subsequent
+			calls will return immediately as long as the dictionary
+			is not modified.
+	 */
 	libAPI const void **allValues(void);
 	
+	/*!
+	@brief		Retrieve a string concatenation of all keys and values
+			in the dictionary.
+	@param		fmt		An optional format string to use for
+					concatenation.  If none is specified,
+					the default ("\r\n%s: %s") is used.
+	@result		A sized buffer structure containing the string
+			concatenation of the keys and values in this dictionary.
+			Note that the buffer returned must be free()d to avoid
+			a memory leak.
+	 */
 	libAPI WTSizedBuffer *all(const char *fmt = NULL);
 	
+	/*!
+	@brief		Retrieve the number of key/value pairs in the dictionary.
+	@result		The number of key/value pairs in the dictionary.
+	 */
 	libAPI const size_t count();
 	
 protected:

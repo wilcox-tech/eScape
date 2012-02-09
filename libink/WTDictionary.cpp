@@ -17,11 +17,11 @@
 void tear_down(const char *, void *, void *);
 int add_to_buffer(const char *, void *, void *);
 
-#define mtex_do_or_die(x) if(x != 0) fatal_error("mutex operation error")
+#define mtex_do_or_die(x) { int i = x; if(i != 0) {fprintf(stderr, "%d\n", i); fatal_error("mutex operation error")} }
 
 libAPI WTDictionary::WTDictionary(bool manage_memory)
 {
-	mowgli_mutex_create(&(this->access_mutex));
+	mtex_do_or_die(mowgli_mutex_create(&(this->access_mutex)));
 	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	this->dict = mowgli_patricia_create(NULL);
 	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
@@ -197,22 +197,16 @@ int add_to_buffer(const char *key, void *data, void *privdata)
 libAPI WTSizedBuffer *WTDictionary::all(const char *fmt)
 {
 	WTSizedBuffer *all_buffer;
-	bool fre = false;
 	all_buffer = static_cast<WTSizedBuffer *>(calloc(1, sizeof(WTSizedBuffer)));
 	if(all_buffer == NULL) alloc_error("WTSizedBuffer", sizeof(WTSizedBuffer));
 	if(fmt == NULL)
-	{
-		fre = true;
-		all_buffer->fmt = strdup("\r\n%s: %s"); 
-	}
+		all_buffer->fmt = "\r\n%s: %s"; 
 	else
 		all_buffer->fmt = fmt;
 	
 	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	mowgli_patricia_foreach(this->dict, &add_to_buffer, all_buffer);
 	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
-	
-	if(fre) { free(const_cast<char *>(all_buffer->fmt)); all_buffer->fmt = NULL; };
 	
 	return all_buffer;
 }
