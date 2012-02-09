@@ -33,7 +33,7 @@ public:
 	libAPI static size_t encode_multiple_to_file(vector<WTMIMEAttachment *> attachments,
 						     FILE *file);
 private:
-	static char *_mimeify_data(char *data);
+	static char *_mimeify_data(char *data, size_t length);
 	static char *_mimeify_file(FILE *file);
 };
 

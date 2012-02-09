@@ -39,6 +39,10 @@ struct WTMIMEAttachment
 	    (optional; default: "Attachment [n]") */
 	char *filename;
 	
+	/*! The length of the attachment (REQUIRED if using a memory buffer;
+	    optional otherwise) */
+	size_t length;
+	
 	/*! The content-type of the attachment
 	    (optional; default: "application/octet-stream") */
 	char *type;
@@ -51,12 +55,13 @@ struct WTMIMEAttachment
 		data.file = NULL;
 		data.buffer = NULL;
 		data.socket = 0;
+		
+		length = 0;
 	}
 	
 	~WTMIMEAttachment()
 	{
 		free(filename);
-		free(type);
 	}
 };
 

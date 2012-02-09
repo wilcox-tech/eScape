@@ -90,7 +90,10 @@ SET(LIBURIPARSER_SRCS contrib/uriparser/src/UriCommon.c contrib/uriparser/src/Ur
 ADD_LIBRARY(uriparser STATIC ${LIBURIPARSER_SRCS})
 
 IF(BUILD_INK)
-	SET(LIBINK_SRCS libink/WTDictionary.cpp libink/WTDictionary.h libink/WTFormParser.cpp libink/WTFormParser.h)
+	SET(LIBINK_SRCS libink/WTDictionary.cpp libink/WTDictionary.h
+			libink/WTFormParser.cpp libink/WTFormParser.h
+			libink/MIME.h
+			libink/WTMIMEEncoder.cpp libink/WTMIMEEncoder.h)
 	ADD_LIBRARY(ink ${LIBTYPE} ${LIBINK_SRCS})
 	TARGET_LINK_LIBRARIES(ink mowgli uriparser)
 ENDIF(BUILD_INK)
