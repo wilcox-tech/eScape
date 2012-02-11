@@ -27,7 +27,7 @@ struct WTMIMEAttachment
 	union
 	{
 		FILE *file;
-		char *buffer;
+		const void *buffer;
 		int socket;
 	} data;
 	
@@ -45,11 +45,12 @@ struct WTMIMEAttachment
 	
 	/*! The content-type of the attachment
 	    (optional; default: "application/octet-stream") */
-	char *type;
+	const char *type;
 	
 	WTMIMEAttachment()
 	{
-		filename = type = NULL;
+		filename = NULL;
+		type = NULL;
 		datatype = MIME_DATATYPE_BUFFER;
 		
 		data.file = NULL;

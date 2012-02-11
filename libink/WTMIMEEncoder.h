@@ -1,6 +1,6 @@
 /*
  * WTMIMEEncoder.h - interface of C++ MIME encoder
- * libInk, the glue holding together
+ * libGwen - Social networking functionality
  * eScape
  * Wilcox Technologies, LLC
  * 
@@ -24,17 +24,23 @@ public:
 	libAPI static char *encode_multiple(vector<WTMIMEAttachment *> attachments);
 	
 	libAPI static void *encode_single_to_url(WTMIMEAttachment *attachment,
-						 WTConnection *connection);
+						 WTConnection *connection,
+						 uint64_t *length);
 	libAPI static void *encode_multiple_to_url(vector<WTMIMEAttachment *>attachments,
-						   WTConnection *connection);
+						   WTConnection *connection,
+						   uint64_t *length);
 	
 	libAPI static size_t encode_single_to_file(WTMIMEAttachment *attachment,
 						   FILE *file);
 	libAPI static size_t encode_multiple_to_file(vector<WTMIMEAttachment *> attachments,
 						     FILE *file);
 private:
-	static char *_mimeify_data(char *data, size_t length);
+	static char *_mimeify_data(const void *data, size_t length);
 	static char *_mimeify_file(FILE *file);
+	static void _do_iteration(vector<WTMIMEAttachment *> attachments,
+				  char *boundary,
+				  char **result,
+				  uint64_t *result_len);
 };
 
 

@@ -148,8 +148,8 @@ bool WTOAuthConnection::gen_sigbase_and_auth(const char *req_type, const void *d
 	if(sig_base == NULL) alloc_error("OAuth signature base string buffer", sig_base_len);
 	snprintf(sig_base, sig_base_len, "%s&%s&%s",
 		 req_type, encoded_uri, enc_params);
-	fprintf(stderr, "OAUTH DEBUG: Signature base string is %s\n", sig_base);
-	fflush(stderr);
+	//fprintf(stderr, "OAUTH DEBUG: Signature base string is %s\n", sig_base);
+	//fflush(stderr);
 	
 	
 	// 
