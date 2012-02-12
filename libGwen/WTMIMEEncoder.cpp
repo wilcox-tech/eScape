@@ -30,6 +30,11 @@
 static uint64_t curr_message = 0;
 
 
+static const char *transfer_encodings[] = {
+	"base64", "binary", "7bit"
+};
+
+
 char *hostname(void)
 {
 	// XXX - Unfortunately, I don't think this will work on Windows.
@@ -91,37 +96,59 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 		// Create the header for this attachment
 		char *header = NULL;
 		asprintf(&header, "Content-type: %s\n"
-			 "Content-transfer-encoding: base64\n\n",
-			 (attach->type ? attach->type : "application/octet-stream"));
+			 "Content-transfer-encoding: %s\n\n",
+			 (attach->type ? attach->type : "application/octet-stream"),
+			 transfer_encodings[attach->transfer_enc]);
 		if(header == NULL) alloc_error("attachment headers", 1);
 		
 		// Encode this attachment
-		char *encoded_attach = _mimeify_data(attach->data.buffer, attach->length);
+		char *encoded_attach = NULL;
+		size_t encoded_size = 0;
+		bool should_free_encoded = true;
 		
-		// Concatenate everything
-		size_t next_attach_len = bound_len + 6 + strlen(header) + strlen(encoded_attach);
-		char *next_attach = static_cast<char *> (calloc(next_attach_len, sizeof(char)));
-		snprintf(next_attach, next_attach_len, "--%s\n%s%s\n\n",
-			 boundary, header, encoded_attach);
+		switch (attach->transfer_enc)
+		{
+			case MIME_TRANSFER_BASE64:
+				encoded_attach =
+					_mimeify_data(attach->data.buffer,
+						      attach->length);
+				encoded_size = strlen(encoded_attach);
+				break;
+			case MIME_TRANSFER_BINARY:
+			case MIME_TRANSFER_7BIT:
+				encoded_attach = (char *)(attach->data.buffer);
+				encoded_size = attach->length;
+				should_free_encoded = false;
+				break;
+			default:
+				break;
+		}
 		
-		free(header);
-		free(encoded_attach);
-		
-		// Stick this attachment on the end of the result buffer
+		// Concatenate everything and stick this attachment on the end
+		// of the result buffer
 		size_t old_len = *result_len;
 		if(old_len == 0) old_len = 1;
-		size_t attach_len = strlen(next_attach);
-		*result_len += attach_len;
+		// We want to overwrite the nul byte
+		--old_len;
+		size_t attach_len = bound_len + 6 + strlen(header) + encoded_size;
+		size_t attach_start = bound_len + 3 + strlen(header);
+		*result_len += attach_len - 1;
 		*result = static_cast<char *> (realloc(*result, *result_len));
 		
-		strncpy(*result+old_len-1, next_attach, attach_len);
+		snprintf(*result+old_len, attach_len, "--%s\n%s",
+			 boundary, header);
 		
-		free(next_attach);
+		memcpy(*result+old_len+attach_start, encoded_attach, encoded_size);
+		memcpy(*result+old_len+attach_len - 3, "\n\n\0", 3);
+		
+		free(header);
+		if(should_free_encoded) free(encoded_attach);
 	}
 	
 	// At the end of the message, put the ending boundary
 	char *result_end = *result + *result_len - 1;
-	result_len += bound_len + 5;
+	*result_len += bound_len + 5;
+	*result = static_cast<char *> (realloc(*result, *result_len));
 	
 	snprintf(result_end, bound_len + 6, "--%s--\n", boundary);
 }
@@ -305,9 +332,12 @@ libAPI void *WTMIMEEncoder::encode_multiple_to_url(vector<WTMIMEAttachment *>att
 		return NULL;
 	}
 	
+	free(boundary);
+	
 	response = connection->upload(reinterpret_cast<const void *>(result), result_len);
 	
 	free(result);
+	return response;
 }
 
 

@@ -21,6 +21,11 @@
 #define	MIME_DATATYPE_SOCKET	0x2
 
 
+#define MIME_TRANSFER_BASE64	0x0
+#define	MIME_TRANSFER_BINARY	0x1
+#define MIME_TRANSFER_7BIT	0x2
+
+
 struct WTMIMEAttachment
 {
 	/*! The data of the attachment (required) */
@@ -43,6 +48,10 @@ struct WTMIMEAttachment
 	    optional otherwise) */
 	size_t length;
 	
+	/*! The transfer encoding of the attachment
+	    (optional; default: base64) */
+	char transfer_enc;
+	
 	/*! The content-type of the attachment
 	    (optional; default: "application/octet-stream") */
 	const char *type;
@@ -51,7 +60,9 @@ struct WTMIMEAttachment
 	{
 		filename = NULL;
 		type = NULL;
+		
 		datatype = MIME_DATATYPE_BUFFER;
+		transfer_enc = MIME_TRANSFER_BASE64;
 		
 		data.file = NULL;
 		data.buffer = NULL;

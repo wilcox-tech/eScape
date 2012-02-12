@@ -91,9 +91,7 @@ ADD_LIBRARY(uriparser STATIC ${LIBURIPARSER_SRCS})
 
 IF(BUILD_INK)
 	SET(LIBINK_SRCS libink/WTDictionary.cpp libink/WTDictionary.h
-			libink/WTFormParser.cpp libink/WTFormParser.h
-			libink/MIME.h
-			libink/WTMIMEEncoder.cpp libink/WTMIMEEncoder.h)
+			libink/WTFormParser.cpp libink/WTFormParser.h)
 	ADD_LIBRARY(ink ${LIBTYPE} ${LIBINK_SRCS})
 	TARGET_LINK_LIBRARIES(ink mowgli uriparser)
 ENDIF(BUILD_INK)
@@ -115,9 +113,11 @@ ENDIF(BUILD_AMY)
 
 IF(BUILD_GWEN)
 	ADD_DEFINITIONS(-DHAVE_GWEN)
-	SET(LIBGWEN_SRCS libGwen/gwen_init.cpp)
+	SET(LIBGWEN_SRCS libGwen/gwen_init.cpp
+			libGwen/MIME.h
+			libGwen/WTMIMEEncoder.cpp libGwen/WTMIMEEncoder.h)
 	ADD_LIBRARY(gwen ${LIBTYPE} ${LIBGWEN_SRCS})
-	TARGET_LINK_LIBRARIES(gwen ink amy)
+	TARGET_LINK_LIBRARIES(gwen ink amy b64)
 ENDIF(BUILD_GWEN)
 
 
