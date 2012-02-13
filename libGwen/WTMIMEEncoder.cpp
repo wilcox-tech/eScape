@@ -132,7 +132,7 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 		--old_len;
 		size_t attach_len = bound_len + 6 + strlen(header) + encoded_size;
 		size_t attach_start = bound_len + 3 + strlen(header);
-		*result_len += attach_len - 1;
+		*result_len += attach_len;
 		*result = static_cast<char *> (realloc(*result, *result_len));
 		
 		snprintf(*result+old_len, attach_len, "--%s\n%s",
@@ -146,9 +146,9 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 	}
 	
 	// At the end of the message, put the ending boundary
-	char *result_end = *result + *result_len - 1;
-	*result_len += bound_len + 5;
+	*result_len += bound_len + 6;
 	*result = static_cast<char *> (realloc(*result, *result_len));
+	char *result_end = *result + *result_len - bound_len - 6;
 	
 	snprintf(result_end, bound_len + 6, "--%s--\n", boundary);
 }
@@ -166,6 +166,10 @@ libAPI char *WTMIMEEncoder::encode_single(WTMIMEAttachment *attachment)
 
 libAPI char *WTMIMEEncoder::encode_multiple(vector<WTMIMEAttachment *> attachments)
 {
+	// The result is stored here.
+	char *result = NULL;
+	
+	
 	// We need to ensure that we actually have at least one attachment.
 	if(attachments.size() <= 0)
 	{
@@ -188,13 +192,6 @@ libAPI char *WTMIMEEncoder::encode_multiple(vector<WTMIMEAttachment *> attachmen
 	
 	free(host);
 	if(boundary == NULL) alloc_error("Unique message ID", 1);
-	
-	
-	
-	// Start off the result with the header.
-	char *result = strdup("MIME-Version: 1.0\n");
-	if(result == NULL) alloc_error("MIME encoding buffer", 18);
-	char *result_moved = result;
 	
 	
 	
@@ -222,6 +219,7 @@ libAPI char *WTMIMEEncoder::encode_multiple(vector<WTMIMEAttachment *> attachmen
 		_do_iteration(attachments, boundary, &result, &result_len);
 	} else {
 		char *header = NULL;
+		char *result_moved;
 		WTMIMEAttachment *attach = attachments.at(0);
 		char *encoded_attach;
 		size_t result_len;
@@ -257,7 +255,7 @@ libAPI char *WTMIMEEncoder::encode_multiple(vector<WTMIMEAttachment *> attachmen
 		strncpy(result_moved, encoded_attach, strlen(encoded_attach));
 		
 		// Set the NUL terminator, to be sure
-		result_moved[result_len - 1] = '\0';
+		result[result_len - 1] = '\0';
 		
 		// The attachment buffer is no longer needed
 		free(encoded_attach);
