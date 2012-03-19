@@ -1,4 +1,0 @@
-0000000000000000000000000000000000000000 0cf2aacb3a311542aca47f545156b8fc5ac92b4f Andrew Wilcox <AWilcox@Wilcox-Tech.com> 1316391366 -0400	clone: from git://git.atheme.org/libmowgli
-0cf2aacb3a311542aca47f545156b8fc5ac92b4f 8aeb3f08e38f3db3ac94d7a3f0b4f23ade063028 unknown <AWilcox@.wilcox-tech.com> 1318276632 -0400	commit: Unify mowgli_index.c's inclusion of mowgli.h with the others.
-8aeb3f08e38f3db3ac94d7a3f0b4f23ade063028 46b68dcb53d0ba27713a728c18fa2eff48f12e84 unknown <AWilcox@.wilcox-tech.com> 1318276779 -0400	commit: Fix building on Windows with recent versions of Visual C++, and fix an issue that caused build to fail on Mac OS X.6.
-46b68dcb53d0ba27713a728c18fa2eff48f12e84 650210d5061955692317340fbb2275c07753fab0 unknown <AWilcox@.wilcox-tech.com> 1318277374 -0400	commit: Two improvements to patricia; one for efficiency and one for reliability.
