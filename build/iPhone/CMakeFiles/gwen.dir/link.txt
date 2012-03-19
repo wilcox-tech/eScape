@@ -1,0 +1,2 @@
+/usr/bin/ar cr libgwen.a  CMakeFiles/gwen.dir/libGwen/gwen_init.cpp.o CMakeFiles/gwen.dir/libGwen/WTMIMEEncoder.cpp.o
+/usr/bin/ranlib libgwen.a

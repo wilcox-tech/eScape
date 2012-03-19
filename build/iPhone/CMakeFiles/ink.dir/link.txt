@@ -1,0 +1,2 @@
+/usr/bin/ar cr libink.a  CMakeFiles/ink.dir/libink/WTDictionary.cpp.o CMakeFiles/ink.dir/libink/WTFormParser.cpp.o
+/usr/bin/ranlib libink.a

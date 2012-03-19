@@ -1,0 +1,352 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+mowgli_config.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_config.h
+win32_support.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/win32_support.h
+mowgli_stdinc.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_stdinc.h
+mowgli_logger.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_logger.h
+mowgli_assert.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_assert.h
+mowgli_exception.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_exception.h
+mowgli_iterator.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_iterator.h
+mowgli_alloc.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_alloc.h
+mowgli_spinlock.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_spinlock.h
+mowgli_list.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_list.h
+mowgli_object_class.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_class.h
+mowgli_object.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object.h
+mowgli_allocation_policy.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_allocation_policy.h
+mowgli_dictionary.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_dictionary.h
+mowgli_patricia.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_patricia.h
+mowgli_mempool.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_mempool.h
+mowgli_module.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_module.h
+mowgli_queue.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_queue.h
+mowgli_hash.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_hash.h
+mowgli_heap.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_heap.h
+mowgli_init.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_init.h
+mowgli_bitvector.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_bitvector.h
+mowgli_hook.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_hook.h
+mowgli_signal.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_signal.h
+mowgli_error_backtrace.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_error_backtrace.h
+mowgli_random.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_random.h
+mowgli_ioevent.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_ioevent.h
+mowgli_argstack.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_argstack.h
+mowgli_object_messaging.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_messaging.h
+mowgli_object_metadata.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_metadata.h
+mowgli_global_storage.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_global_storage.h
+mowgli_string.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_string.h
+mowgli_allocator.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_allocator.h
+mowgli_formatter.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_formatter.h
+mowgli_index.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_index.h
+mowgli_thread.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_thread.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_alloc.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_alloc.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_allocation_policy.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_allocation_policy.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_allocator.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_allocator.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_argstack.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_argstack.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_assert.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_bitvector.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_bitvector.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_dictionary.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_dictionary.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_error_backtrace.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_error_backtrace.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_exception.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_formatter.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_formatter.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_global_storage.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_global_storage.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_hash.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_hash.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_heap.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+sys/mman.h
+-
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_heap.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_hook.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_hook.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_index.c
+stdlib.h
+-
+string.h
+-
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_index.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_init.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_init.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_ioevent.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+sys/epoll.h
+-
+port.h
+-
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_ioevent.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_iterator.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_list.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_list.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_logger.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_logger.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_mempool.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_mempool.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_module.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_module_posix.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+dlfcn.h
+-
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_class.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_class.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_messaging.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_messaging.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_metadata.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_object_metadata.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_patricia.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_patricia.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_queue.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_queue.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_random.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_random.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_signal.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_signal.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_spinlock.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_spinlock.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_stdinc.h
+stdarg.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+signal.h
+-
+time.h
+-
+errno.h
+-
+setjmp.h
+-
+sys/stat.h
+-
+ctype.h
+-
+netdb.h
+-
+netinet/in.h
+-
+unistd.h
+-
+grp.h
+-
+sys/time.h
+-
+sys/wait.h
+-
+sys/resource.h
+-
+sys/socket.h
+-
+fcntl.h
+-
+arpa/inet.h
+-
+libgen.h
+-
+dirent.h
+-
+windows.h
+-
+winsock.h
+-
+sys/timeb.h
+-
+direct.h
+-
+io.h
+-
+fcntl.h
+-
+sys/types.h
+-
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_string.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_string.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_thread.c
+mowgli.h
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli.h
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/mowgli_thread.h
+thread.h
+-
+synch.h
+-
+pthread.h
+-
+
+/Users/awilcox/Wilcox Tech/eScape/contrib/libmowgli/src/libmowgli/win32_support.h
+winsock.h
+-
+time.h
+-
+
