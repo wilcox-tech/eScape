@@ -1,6 +1,6 @@
 [submodule "libmowgli"]
   path = contrib/libmowgli
-  url  = git://git.atheme.org/libmowgli-2.git
+  url  = git://git.atheme.org/libmowgli.git
 
 [submodule "uriparser"]
   path = contrib/uriparser
