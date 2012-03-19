@@ -83,6 +83,13 @@ public:
 	libAPI void set(const char *key, const void *data);
 	
 	/*!
+	@brief		Remove all keys from the dictionary.
+	@result		All keys are removed from the dictionary.  If this
+			dictionary is memory-managed, all values are freed.
+	 */
+	libAPI void clear(void);
+	
+	/*!
 	@brief		Retrieve all keys in the dictionary.
 	@result		An array of the keys from this dictionary.  Use the
 			::count method to determine the number of keys in the

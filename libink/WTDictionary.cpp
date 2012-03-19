@@ -37,8 +37,16 @@ void tear_down(const char *key UNUSED, void *data, void *privdata UNUSED)
 
 libAPI WTDictionary::~WTDictionary()
 {
-	mowgli_patricia_destroy(this->dict, (manager ? tear_down : NULL), NULL);
+	clear();
 	mowgli_mutex_destroy(&(this->access_mutex));
+}
+
+libAPI void WTDictionary::clear(void)
+{
+	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
+	mowgli_patricia_destroy(this->dict, (manager ? tear_down : NULL), NULL);
+	this->dict = mowgli_patricia_create(NULL);
+	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 }
 
 libAPI void WTDictionary::set(const char *key, const void *value)
