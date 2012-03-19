@@ -1,6 +1,0 @@
-/Users/awilcox/Wilcox Tech/eScape/build/iPhone/CMakeFiles/amy.dir
-/Users/awilcox/Wilcox Tech/eScape/build/iPhone/CMakeFiles/b64.dir
-/Users/awilcox/Wilcox Tech/eScape/build/iPhone/CMakeFiles/gwen.dir
-/Users/awilcox/Wilcox Tech/eScape/build/iPhone/CMakeFiles/ink.dir
-/Users/awilcox/Wilcox Tech/eScape/build/iPhone/CMakeFiles/mowgli.dir
-/Users/awilcox/Wilcox Tech/eScape/build/iPhone/CMakeFiles/uriparser.dir

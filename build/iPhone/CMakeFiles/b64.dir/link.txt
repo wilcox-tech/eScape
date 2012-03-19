@@ -1,2 +1,0 @@
-/usr/bin/ar cr libb64.a  CMakeFiles/b64.dir/contrib/libb64/src/cdecode.c.o CMakeFiles/b64.dir/contrib/libb64/src/cencode.c.o
-/usr/bin/ranlib libb64.a
