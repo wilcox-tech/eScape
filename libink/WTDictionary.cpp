@@ -45,6 +45,10 @@ libAPI void WTDictionary::clear(void)
 {
 	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	mowgli_patricia_destroy(this->dict, (manager ? tear_down : NULL), NULL);
+	this->_count = 0;
+	keys.clear();
+	values.clear();
+	this->vectors_valid = true;
 	this->dict = mowgli_patricia_create(NULL);
 	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 }
