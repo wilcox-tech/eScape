@@ -38,6 +38,7 @@ void tear_down(const char *key UNUSED, void *data, void *privdata UNUSED)
 libAPI WTDictionary::~WTDictionary()
 {
 	clear();
+	mowgli_patricia_destroy(this->dict, NULL, NULL);
 	mowgli_mutex_destroy(&(this->access_mutex));
 }
 
@@ -55,10 +56,12 @@ libAPI void WTDictionary::clear(void)
 
 libAPI void WTDictionary::set(const char *key, const void *value)
 {
+	const void *old_value;
+	
 	if(key == NULL)
 		return;
 	
-	if(get(key) == NULL)
+	if((old_value = get(key)) == NULL)
 	{
 		// we can't delete something that doesn't exist
 		if(value == NULL) return;
@@ -73,6 +76,10 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 	}
 	 else
 	{
+		/* If the value is the same as before, just skip. */
+		if(old_value == value)
+			return;
+		
 		/* XXX This makes corgi sad.  We're in a critical section for
 		   a LONG ARSE TIME with this.  We have to retrieve the old,
 		   free it, delete it, decrement, and then add and increment
