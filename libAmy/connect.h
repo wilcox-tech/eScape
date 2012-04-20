@@ -17,6 +17,26 @@
 #	include <openssl/err.h>
 #endif
 
+#if defined(__MWERKS__) && defined(macintosh)
+#	define OSNAME "Mac OS (PPC)"
+
+struct addrinfo
+{
+	int ai_flags;
+	int ai_family;
+	int ai_socktype;
+	int ai_protocol;
+	size_t ai_addrlen;
+	struct sockaddr *ai_addr;
+	char *ai_canonname;
+	struct addrinfo *ai_next;
+};
+char *gai_strerror(int);
+void freeaddrinfo(struct addrinfo *);
+int getaddrinfo(const char *, const char *, const struct addrinfo *, struct addrinfo **); 
+
+#endif
+
 #ifndef EXTRA_UA
 #	define EXTRA_UA ""
 #endif
