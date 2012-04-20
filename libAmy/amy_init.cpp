@@ -47,8 +47,10 @@ libAPI void amy_init()
 	
 	if(WSAStartup(MAKEWORD(2,0), &wsadata) != 0) abort(); // XXX
 #endif /*WIN32*/
+	
+	mowgli_init();
 
-#ifndef NO_THREADSAFE
+#if !defined(NO_THREADSAFE) && !defined(NO_SSL)
 	
 	ssl_lock_group = (mowgli_mutex_t *)(calloc(CRYPTO_num_locks(), sizeof(mowgli_mutex_t)));
 	if(ssl_lock_group == NULL) alloc_error("OpenSSL lock group", CRYPTO_num_locks() * sizeof(mowgli_mutex_t));
@@ -73,7 +75,7 @@ libAPI void amy_clean()
 	WSACleanup();
 #endif /*WIN32*/
 
-#ifndef NO_THREADSAFE
+#if !defined(NO_THREADSAFE) && !defined(NO_SSL)
 
 	for(i = 0; i < CRYPTO_num_locks(); i++)
 		mowgli_mutex_destroy(&(ssl_lock_group[i]));
