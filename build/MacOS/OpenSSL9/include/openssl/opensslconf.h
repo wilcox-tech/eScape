@@ -1,0 +1,1 @@
+#define OPENSSL_NO_KRB5 1
