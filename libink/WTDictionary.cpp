@@ -21,6 +21,7 @@ int add_to_buffer(const char *, void *, void *);
 
 libAPI WTDictionary::WTDictionary(bool manage_memory)
 {
+	mowgli_init();
 	mtex_do_or_die(mowgli_mutex_create(&(this->access_mutex)));
 	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
 	this->dict = mowgli_patricia_create(NULL);
