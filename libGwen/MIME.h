@@ -12,8 +12,8 @@
 #define __LIBINK_MIME_H__
 
 
-#include <cstdlib>	// free
-#include <cstdio>	// FILE
+#include <stdlib.h>	// free
+#include <stdio.h>	// FILE
 
 
 #define MIME_DATATYPE_BUFFER	0x0

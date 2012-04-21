@@ -14,7 +14,12 @@
 
 #ifndef _WIN32
 #	include <unistd.h>	// getpid
-#	include <sys/utsname.h>	// uname
+#	ifndef __MWERKS__
+#		include <sys/utsname.h>		// uname
+#	else
+#		include <utsname.h>		// uname
+#		include <Utility.h>		// asprintf
+#	endif
 #else
 #	include <process.h>	// getpid
 #	define getpid _getpid
