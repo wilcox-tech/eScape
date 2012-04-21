@@ -15,8 +15,8 @@ static int test_num = 0;
 static int passed = 0;
 static int failed = 0;
 
-#define DO_TEST(name, function, onpass, onfail) testhead(name); if(function) { TEST_PASSED(onpass) } else { TEST_FAILED(onfail) };
-#define DO_TEST_FAIL(name, function, onpass, onfail) testhead(name); if(!function) { TEST_PASSED(onpass) } else { TEST_FAILED(onfail) };
+#define DO_TEST(name, function, onpass, onfail) testhead(name); if(function) { TEST_PASSED(onpass) } else { TEST_FAILED(onfail) }
+#define DO_TEST_FAIL(name, function, onpass, onfail) testhead(name); if(!function) { TEST_PASSED(onpass) } else { TEST_FAILED(onfail) }
 #define NOTHING do { } while(false)
 #define testhead(test_name) printf("\n\n====================\nTest %d: %s\n====================\n", ++test_num, test_name)
 #define TEST_FAILED(x) x; printf(">>>> TEST FAILED <<<<\n"); ++failed;

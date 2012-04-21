@@ -1,6 +1,6 @@
-#include "../test.h"
 #include <libink/WTDictionary.h>
 #include <libink/WTFormParser.h>
+#include "../test.h"
 
 bool insert_into_managed(WTDictionary *dict)
 {

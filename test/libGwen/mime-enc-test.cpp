@@ -35,7 +35,7 @@ int main(void)
 	attach->length = strlen((const char *)attach->data.buffer);
 	attach->type = "text/plain";
 	
-	DO_TEST("MIME message with one attachment"
+	DO_TEST("MIME message with one attachment",
 		single(attach),
 		NOTHING,
 		NOTHING)
