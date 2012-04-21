@@ -41,7 +41,39 @@
 #	define libAPI
 #endif
 
-#if defined(_WIN32) || defined(__sun)
+#if defined(__MWERKS__)
+int asprintf(char **strp, const char *fmt, ...)
+{
+	va_list ap;
+	
+	/* Initialise, like BSD */
+	*strp = NULL;
+	
+	va_start(ap, fmt);
+	int len = vsnprintf(NULL, 0, fmt, ap);
+	va_end(ap);
+	
+	if(len > -1)
+	{
+		*strp = static_cast<char *>(calloc(len + 1, sizeof(char)));
+		if(*strp == NULL)
+			alloc_error("asprintf buffer", len + 1);
+		
+		va_start(ap, fmt);
+		len = vsnprintf(*strp, len + 1, fmt, ap);
+		va_end(ap);
+		
+		if(len < 0)
+		{
+			free(*strp);
+			*strp = NULL;
+			return -1;
+		}
+	}
+	
+	return len;
+}
+#elif defined(_WIN32) || defined(__sun)
 inline time_t timegm(struct tm *stupid_time)
 {
 	time_t secs, gmt_secs;
