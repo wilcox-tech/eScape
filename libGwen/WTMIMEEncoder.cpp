@@ -19,6 +19,7 @@
 #	else
 #		include <utsname.h>		// uname
 #		include <Utility.h>		// asprintf
+#		define getpid() 9000
 #	endif
 #else
 #	include <process.h>	// getpid
