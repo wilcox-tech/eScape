@@ -42,7 +42,8 @@
 #endif
 
 #if defined(__MWERKS__)
-int asprintf(char **strp, const char *fmt, ...)
+#include <stdarg.h>
+static int asprintf(char **strp, const char *fmt, ...)
 {
 	va_list ap;
 	
@@ -73,7 +74,9 @@ int asprintf(char **strp, const char *fmt, ...)
 	
 	return len;
 }
-#elif defined(_WIN32) || defined(__sun)
+#endif
+
+#if defined(_WIN32) || defined(__sun) || defined(__MWERKS__)
 inline time_t timegm(struct tm *stupid_time)
 {
 	time_t secs, gmt_secs;
