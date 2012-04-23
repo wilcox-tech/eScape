@@ -29,6 +29,8 @@ libAPI WTDictionary::WTDictionary(bool manage_memory)
 	this->_count = 0;
 	this->manager = manage_memory;
 	this->vectors_valid = true;
+	this->key_array = NULL;
+	this->value_array = NULL;
 }
 
 void tear_down(const char *key UNUSED, void *data, void *privdata UNUSED)
@@ -41,6 +43,8 @@ libAPI WTDictionary::~WTDictionary()
 	clear();
 	mowgli_patricia_destroy(this->dict, NULL, NULL);
 	mowgli_mutex_destroy(&(this->access_mutex));
+	free(value_array);
+	free(key_array);
 }
 
 libAPI void WTDictionary::clear(void)
@@ -146,7 +150,8 @@ void WTDictionary::reloadVectors(void)
 
 libAPI const char **WTDictionary::allKeys(void)
 {
-	const char **key_array = static_cast<const char **>(calloc(_count,sizeof(const char *)));
+	key_array = static_cast<const char **>(realloc(key_array, _count * sizeof(const char *)));
+	if(key_array == NULL) alloc_error("dictionary key array", _count * sizeof(const char *));
 	reloadVectors();
 	for(unsigned int key = 0; key < _count; key++)
 		key_array[key] = keys.at(key);
@@ -155,7 +160,8 @@ libAPI const char **WTDictionary::allKeys(void)
 
 libAPI const void **WTDictionary::allValues(void)
 {
-	const void **value_array = static_cast<const void **>(calloc(_count,sizeof(const void *)));
+	value_array = static_cast<const void **>(realloc(value_array, _count * sizeof(const void *)));
+	if(value_array == NULL) alloc_error("dictionary value array", _count * sizeof(const void *));
 	reloadVectors();
 	for(unsigned int value = 0; value < _count; value++)
 		value_array[value] = values.at(value);

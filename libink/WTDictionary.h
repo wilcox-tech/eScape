@@ -138,6 +138,8 @@ protected:
 	mowgli_patricia_t *dict;
 	vector<const char *> keys;
 	vector<const void *> values;
+	const char **key_array;
+	const void **value_array;
 	
 	mowgli_mutex_t access_mutex;
 	friend int fill_my_vector(const char *,void*,void*);
