@@ -19,6 +19,7 @@ cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
 -DCMAKE_OSX_SYSROOT:PATH=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk \
 -DCMAKE_SHARED_LINKER_FLAGS:STRING='-isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk' \
 -DEXTRA_UA="$EXTRA_UA" \
+-DTINY_ESCAPE:BOOL=ON \
 -DBUILD_IPHONE:BOOL=ON \
 -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++ -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang \
 -DOPENSSL_INCLUDE_DIR:PATH="$OPENSSL_INCLUDE" -DOPENSSL_SSL_LIBRARIES:FILEPATH="$OPENSSL_LIBS" \

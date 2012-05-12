@@ -16,6 +16,7 @@ ENDIF(COMMAND cmake_policy)
 OPTION(BUILD_TEST	"Enable shell frontend (test utilities)" ON)
 OPTION(WANT_MALLOC_CHK	"Enable checked malloc (GuardMalloc, Mudflap, Etc)" OFF)
 OPTION(DISABLE_SSL	"Disable SSL support (this is far-reaching, use caution)" OFF)
+OPTION(TINY_ESCAPE	"Build the tiniest libs possible (removes anything not strictly necessary)" OFF)
 
 # Libraries
 OPTION(BUILD_INK	"Build local copy of glue (libink)" ON)
@@ -44,8 +45,11 @@ IF(DISABLE_SSL)
 ELSE(DISABLE_SSL)
 	FIND_PACKAGE(openssl REQUIRED)
 	INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
-	
 ENDIF(DISABLE_SSL)
+
+IF(TINY_ESCAPE)
+	ADD_DEFINITIONS(-DTINY_ESCAPE)
+ENDIF(TINY_ESCAPE)
 
 SET(LIBTYPE SHARED)
 
@@ -87,14 +91,25 @@ ELSE(SYS_MOWGLI)
 	ELSE(WIN32)
 		SET(LIBMOWGLI_SRC_PLAT contrib/libmowgli/src/libmowgli/mowgli_module_posix.c)
 	ENDIF(WIN32)
-	SET(LIBMOWGLI_SRCS contrib/libmowgli/src/libmowgli/mowgli_alloc.c contrib/libmowgli/src/libmowgli/mowgli_allocation_policy.c contrib/libmowgli/src/libmowgli/mowgli_allocator.c contrib/libmowgli/src/libmowgli/mowgli_argstack.c contrib/libmowgli/src/libmowgli/mowgli_bitvector.c contrib/libmowgli/src/libmowgli/mowgli_dictionary.c contrib/libmowgli/src/libmowgli/mowgli_error_backtrace.c contrib/libmowgli/src/libmowgli/mowgli_formatter.c contrib/libmowgli/src/libmowgli/mowgli_global_storage.c contrib/libmowgli/src/libmowgli/mowgli_hash.c contrib/libmowgli/src/libmowgli/mowgli_heap.c contrib/libmowgli/src/libmowgli/mowgli_hook.c contrib/libmowgli/src/libmowgli/mowgli_index.c contrib/libmowgli/src/libmowgli/mowgli_init.c contrib/libmowgli/src/libmowgli/mowgli_ioevent.c contrib/libmowgli/src/libmowgli/mowgli_list.c contrib/libmowgli/src/libmowgli/mowgli_logger.c contrib/libmowgli/src/libmowgli/mowgli_mempool.c contrib/libmowgli/src/libmowgli/mowgli_object.c contrib/libmowgli/src/libmowgli/mowgli_object_class.c contrib/libmowgli/src/libmowgli/mowgli_object_messaging.c contrib/libmowgli/src/libmowgli/mowgli_object_metadata.c contrib/libmowgli/src/libmowgli/mowgli_patricia.c contrib/libmowgli/src/libmowgli/mowgli_queue.c contrib/libmowgli/src/libmowgli/mowgli_random.c contrib/libmowgli/src/libmowgli/mowgli_signal.c contrib/libmowgli/src/libmowgli/mowgli_spinlock.c contrib/libmowgli/src/libmowgli/mowgli_string.c contrib/libmowgli/src/libmowgli/mowgli_thread.c ${LIBMOWGLI_SRC_PLAT}) 
+	IF(TINY_ESCAPE)
+		SET(LIBMOWGLI_SRC_OPTIONAL)
+	ELSE(TINY_ESCAPE)
+		SET(LIBMOWGLI_SRC_OPTIONAL contrib/libmowgli/src/libmowgli/mowgli_dictionary.c contrib/libmowgli/src/libmowgli/mowgli_error_backtrace.c contrib/libmowgli/src/libmowgli/mowgli_formatter.c contrib/libmowgli/src/libmowgli/mowgli_hash.c contrib/libmowgli/src/libmowgli/mowgli_ioevent.c contrib/libmowgli/src/libmowgli/mowgli_mempool.c contrib/libmowgli/src/libmowgli/mowgli_object_metadata.c contrib/libmowgli/src/libmowgli/mowgli_signal.c)
+	ENDIF(TINY_ESCAPE)
+	SET(LIBMOWGLI_SRCS contrib/libmowgli/src/libmowgli/mowgli_alloc.c contrib/libmowgli/src/libmowgli/mowgli_allocation_policy.c contrib/libmowgli/src/libmowgli/mowgli_allocator.c contrib/libmowgli/src/libmowgli/mowgli_argstack.c contrib/libmowgli/src/libmowgli/mowgli_bitvector.c contrib/libmowgli/src/libmowgli/mowgli_global_storage.c contrib/libmowgli/src/libmowgli/mowgli_hook.c contrib/libmowgli/src/libmowgli/mowgli_heap.c contrib/libmowgli/src/libmowgli/mowgli_index.c contrib/libmowgli/src/libmowgli/mowgli_init.c contrib/libmowgli/src/libmowgli/mowgli_list.c contrib/libmowgli/src/libmowgli/mowgli_logger.c contrib/libmowgli/src/libmowgli/mowgli_object_class.c contrib/libmowgli/src/libmowgli/mowgli_object_messaging.c contrib/libmowgli/src/libmowgli/mowgli_object.c contrib/libmowgli/src/libmowgli/mowgli_patricia.c contrib/libmowgli/src/libmowgli/mowgli_queue.c contrib/libmowgli/src/libmowgli/mowgli_random.c contrib/libmowgli/src/libmowgli/mowgli_spinlock.c contrib/libmowgli/src/libmowgli/mowgli_string.c contrib/libmowgli/src/libmowgli/mowgli_thread.c ${LIBMOWGLI_SRC_OPTIONAL} ${LIBMOWGLI_SRC_PLAT}) 
 	ADD_LIBRARY(mowgli STATIC ${LIBMOWGLI_SRCS})
 ENDIF(SYS_MOWGLI)
 
 SET(LIBB64_SRCS contrib/libb64/src/cdecode.c contrib/libb64/src/cencode.c)
 ADD_LIBRARY(b64 STATIC ${LIBB64_SRCS})
 
-SET(LIBURIPARSER_SRCS contrib/uriparser/src/UriCommon.c contrib/uriparser/src/UriCommon.h contrib/uriparser/src/UriCompare.c contrib/uriparser/src/UriEscape.c contrib/uriparser/src/UriFile.c contrib/uriparser/src/UriIp4.c contrib/uriparser/src/UriIp4Base.c contrib/uriparser/src/UriIp4Base.h contrib/uriparser/src/UriNormalize.c contrib/uriparser/src/UriNormalizeBase.c contrib/uriparser/src/UriNormalizeBase.h contrib/uriparser/src/UriParse.c contrib/uriparser/src/UriParseBase.c contrib/uriparser/src/UriParseBase.h contrib/uriparser/src/UriQuery.c contrib/uriparser/src/UriRecompose.c contrib/uriparser/src/UriResolve.c contrib/uriparser/src/UriShorten.c)
+IF(TINY_ESCAPE)
+	ADD_DEFINITIONS(-DURI_SIZEDOWN)
+	SET(LIBURIPARSER_SRC_OPTIONAL)
+ELSE(TINY_ESCAPE)
+	SET(LIBURIPARSER_SRC_OPTIONAL contrib/uriparser/src/UriCompare.c contrib/uriparser/src/UriFile.c)
+ENDIF(TINY_ESCAPE)
+SET(LIBURIPARSER_SRCS contrib/uriparser/src/UriCommon.c contrib/uriparser/src/UriCommon.h contrib/uriparser/src/UriEscape.c contrib/uriparser/src/UriIp4.c contrib/uriparser/src/UriIp4Base.c contrib/uriparser/src/UriIp4Base.h contrib/uriparser/src/UriNormalize.c contrib/uriparser/src/UriNormalizeBase.c contrib/uriparser/src/UriNormalizeBase.h contrib/uriparser/src/UriParse.c contrib/uriparser/src/UriParseBase.c contrib/uriparser/src/UriParseBase.h contrib/uriparser/src/UriQuery.c contrib/uriparser/src/UriRecompose.c contrib/uriparser/src/UriResolve.c contrib/uriparser/src/UriShorten.c)
 ADD_LIBRARY(uriparser STATIC ${LIBURIPARSER_SRCS})
 
 IF(BUILD_INK)
@@ -129,10 +144,10 @@ IF(BUILD_GWEN)
 ENDIF(BUILD_GWEN)
 
 
-
 FILE(GLOB amy_head "libAmy/*.h")
 FILE(GLOB gwen_head "libGwen/*.h")
 FILE(GLOB ink_head "libink/*.h")
+INSTALL(FILES "Utility.h" DESTINATION include)
 INSTALL(FILES ${amy_head} DESTINATION include/libAmy)
 INSTALL(FILES ${gwen_head} DESTINATION include/libGwen)
 INSTALL(FILES ${ink_head} DESTINATION include/libink)
