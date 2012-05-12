@@ -98,7 +98,7 @@ inline char toHex(const char &x)
 {
 	return x > 9 ? x + 55: x + 48;
 }
-inline char *URLEncode(const char *sIn)
+inline char *URLEncode(const char *sIn, const char *charsToIgnore = "\x5f\x2e\x2d")
 {
 	char *sOut;
 	
@@ -117,7 +117,7 @@ inline char *URLEncode(const char *sIn)
 	pInTmp = sIn;
 	while(*pInTmp)
 	{
-		if (!isalnum(*pInTmp) && *pInTmp != 0x5f && *pInTmp != 0x2e && *pInTmp != 0x2d)
+		if (!isalnum(*pInTmp) && (!charsToIgnore || strchr(charsToIgnore, *pInTmp) == NULL))
 			k++;
 		pInTmp++;
 	}
@@ -136,17 +136,14 @@ inline char *URLEncode(const char *sIn)
 		
 		while (*pInTmp)
 		{
-			if(isalnum(*pInTmp) || *pInTmp == 0x5f || *pInTmp == 0x2e || *pInTmp == 0x2d)
+			if(isalnum(*pInTmp) || (charsToIgnore && strchr(charsToIgnore, *pInTmp) != NULL))
 				*pOutTmp++ = *pInTmp;
 			else
-				if(isspace(*pInTmp))
-					*pOutTmp++ = '+';
-				else
-				{
-					*pOutTmp++ = '%';
-					*pOutTmp++ = toHex(*pInTmp>>4);
-					*pOutTmp++ = toHex(*pInTmp%16);
-				}
+			{
+				*pOutTmp++ = '%';
+				*pOutTmp++ = toHex(*pInTmp>>4);
+				*pOutTmp++ = toHex(*pInTmp%16);
+			}
 			pInTmp++;
 		}
 		
