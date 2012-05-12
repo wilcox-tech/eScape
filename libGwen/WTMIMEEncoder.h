@@ -12,7 +12,7 @@
 #define __LIBINK_WTMIMEENCODER_H__
 
 
-#include "MIME.h"		// Common MIME routines
+#include <libGwen/MIME.h>	// Common MIME routines
 #include <libAmy/connect.h>	// WTConnection
 #include <Utility.h>		// libAPI, nonfatal_error
 
