@@ -105,10 +105,10 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 		
 		// Create the header for this attachment
 		char *header = NULL;
-		asprintf(&header, "Content-type: %s\n"
-			 "Content-transfer-encoding: %s\n"
-			 "Content-disposition: %s%s\n"
-			 "\n",
+		asprintf(&header, "Content-type: %s\r\n"
+			 "Content-transfer-encoding: %s\r\n"
+			 "Content-disposition: %s%s\r\n"
+			 "\r\n",
 			 (attach->type ? attach->type : "application/octet-stream"),
 			 transfer_encodings[attach->transfer_enc],
 			 content_dispositions[attach->disposition],
@@ -149,11 +149,11 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 		*result_len += attach_len;
 		*result = static_cast<char *> (realloc(*result, *result_len));
 		
-		snprintf(*result+old_len, attach_len, "--%s\n%s",
+		snprintf(*result+old_len, attach_len, "--%s\r\n%s",
 			 boundary, header);
 		
 		memcpy(*result+old_len+attach_start, encoded_attach, encoded_size);
-		memcpy(*result+old_len+attach_len - 3, "\n\n\0", 3);
+		memcpy(*result+old_len+attach_len - 3, "\r\n\r\n\0", 3);
 		
 		free(header);
 		if(should_free_encoded) free(encoded_attach);
@@ -164,7 +164,7 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 	*result = static_cast<char *> (realloc(*result, *result_len));
 	char *result_end = *result + *result_len - bound_len - 6;
 	
-	snprintf(result_end, bound_len + 6, "--%s--\n", boundary);
+	snprintf(result_end, bound_len + 6, "--%s--\r\n", boundary);
 }
 
 
