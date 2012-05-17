@@ -144,27 +144,27 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 		if(old_len == 0) old_len = 1;
 		// We want to overwrite the nul byte
 		--old_len;
-		size_t attach_len = bound_len + 6 + strlen(header) + encoded_size;
-		size_t attach_start = bound_len + 3 + strlen(header);
+		size_t attach_start = bound_len + 4 + strlen(header);
+		size_t attach_len = attach_start + encoded_size + 4;
 		*result_len += attach_len;
 		*result = static_cast<char *> (realloc(*result, *result_len));
 		
-		snprintf(*result+old_len, attach_len, "--%s\r\n%s",
+		snprintf(*result+old_len, attach_start + 1, "--%s\r\n%s",
 			 boundary, header);
 		
 		memcpy(*result+old_len+attach_start, encoded_attach, encoded_size);
-		memcpy(*result+old_len+attach_len - 3, "\r\n\r\n\0", 3);
+		memcpy(*result+old_len+attach_len - 4, "\r\n\r\n\0", 5);
 		
 		free(header);
 		if(should_free_encoded) free(encoded_attach);
 	}
 	
 	// At the end of the message, put the ending boundary
-	*result_len += bound_len + 6;
+	*result_len += bound_len + 7;
 	*result = static_cast<char *> (realloc(*result, *result_len));
-	char *result_end = *result + *result_len - bound_len - 6;
+	char *result_end = *result + *result_len - bound_len - 7;
 	
-	snprintf(result_end, bound_len + 6, "--%s--\r\n", boundary);
+	snprintf(result_end, bound_len + 7, "--%s--\r\n", boundary);
 }
 
 
