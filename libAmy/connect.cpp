@@ -202,7 +202,7 @@ bool WTConnection::connect(const char *url)
 	int addr_result;
 	struct addrinfo hint;
 	struct timeval tv;
-	char ports[5];
+	char ports[6];
 	
 	if(this->connecting)
 	{
@@ -234,9 +234,9 @@ bool WTConnection::connect(const char *url)
 	memset(&hint, 0, sizeof(struct addrinfo));
 	hint.ai_family = AF_UNSPEC;
 	hint.ai_socktype = SOCK_STREAM;
-
+	
 	delegate_status(WTHTTP_Resolving);
-	snprintf(ports, 5, "%d", this->port);
+	snprintf(ports, 6, "%d", this->port);
 	if( (addr_result = getaddrinfo(this->domain,
 					ports,
 					&hint,
