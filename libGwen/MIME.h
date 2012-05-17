@@ -26,6 +26,11 @@
 #define MIME_TRANSFER_7BIT	0x2
 
 
+#define MIME_DISPOSITION_INLINE	0x0
+#define MIME_DISPOSITION_ATTACH	0x1
+#define MIME_DISPOSITION_FORM	0x2
+
+
 struct WTMIMEAttachment
 {
 	/*! The data of the attachment (required) */
@@ -39,6 +44,14 @@ struct WTMIMEAttachment
 	/*! The type of the data used in the union
 	    (required; default: buffer) */
 	char datatype;
+	
+	/*! The disposition of the attachment
+	    (optional; default: inline) */
+	char disposition;
+	
+	/*! Extra fields for content-disposition header
+	    (optional; default: NULL) */
+	char *extra_disposition;
 	
 	/*! The filename of the attachment
 	    (optional; default: "Attachment [n]") */
@@ -58,10 +71,12 @@ struct WTMIMEAttachment
 	
 	WTMIMEAttachment()
 	{
+		extra_disposition = NULL;
 		filename = NULL;
 		type = NULL;
 		
 		datatype = MIME_DATATYPE_BUFFER;
+		disposition = MIME_DISPOSITION_INLINE;
 		transfer_enc = MIME_TRANSFER_BASE64;
 		
 		data.file = NULL;

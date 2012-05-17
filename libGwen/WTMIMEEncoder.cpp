@@ -40,6 +40,10 @@ static const char *transfer_encodings[] = {
 	"base64", "binary", "7bit"
 };
 
+static const char *content_dispositions[] = {
+	"inline", "attachment", "form-data"
+};
+
 
 char *hostname(void)
 {
@@ -102,9 +106,13 @@ void WTMIMEEncoder::_do_iteration(vector<WTMIMEAttachment *> attachments,
 		// Create the header for this attachment
 		char *header = NULL;
 		asprintf(&header, "Content-type: %s\n"
-			 "Content-transfer-encoding: %s\n\n",
+			 "Content-transfer-encoding: %s\n"
+			 "Content-disposition: %s%s\n"
+			 "\n",
 			 (attach->type ? attach->type : "application/octet-stream"),
-			 transfer_encodings[attach->transfer_enc]);
+			 transfer_encodings[attach->transfer_enc],
+			 content_dispositions[attach->disposition],
+			 (attach->extra_disposition ? attach->extra_disposition : ""));
 		if(header == NULL) alloc_error("attachment headers", 1);
 		
 		// Encode this attachment
@@ -325,7 +333,7 @@ libAPI void *WTMIMEEncoder::encode_multiple_to_url(vector<WTMIMEAttachment *>att
 	
 	
 	char *type = NULL;
-	asprintf(&type, "multipart/mixed; boundary=%s", boundary);
+	asprintf(&type, "multipart/form-data; boundary=%s", boundary);
 	if(type == NULL) alloc_error("MIME Content-type header", 25);
 	
 	connection->http_header("MIME-Version", strdup("1.0"));
