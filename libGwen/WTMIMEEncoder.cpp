@@ -279,7 +279,12 @@ libAPI void *WTMIMEEncoder::encode_single_to_url(WTMIMEAttachment *attachment,
 						 WTConnection *connection,
 						 uint64_t *result_len)
 {
-	return NULL;
+	// We're lazy.  Just shove it in a vector and pretend there's multiple.
+	
+	vector<WTMIMEAttachment *> single;
+	single.push_back(attachment);
+	
+	return encode_multiple_to_url(single, connection, result_len);
 }
 
 libAPI void *WTMIMEEncoder::encode_multiple_to_url(vector<WTMIMEAttachment *>attachments,
@@ -319,22 +324,15 @@ libAPI void *WTMIMEEncoder::encode_multiple_to_url(vector<WTMIMEAttachment *>att
 	*result_len = 0;
 	
 	
+	char *type = NULL;
+	asprintf(&type, "multipart/mixed; boundary=%s", boundary);
+	if(type == NULL) alloc_error("MIME Content-type header", 25);
 	
-	// If we have more than one, we need to make a mixed message.
-	if(attachments.size() > 1)
-	{
-		char *type = NULL;
-		asprintf(&type, "multipart/mixed; boundary=%s", boundary);
-		if(type == NULL) alloc_error("MIME Content-type header", 25);
-		
-		connection->http_header("MIME-Version", strdup("1.0"));
-		connection->http_header("Content-type", type);
-		
-		// Handle attachments
-		_do_iteration(attachments, boundary, &result, result_len);
-	} else {
-		return NULL;
-	}
+	connection->http_header("MIME-Version", strdup("1.0"));
+	connection->http_header("Content-type", type);
+	
+	// Handle attachments
+	_do_iteration(attachments, boundary, &result, result_len);
 	
 	free(boundary);
 	
