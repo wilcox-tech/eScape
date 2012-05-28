@@ -33,9 +33,23 @@ libAPI WTDictionary::WTDictionary(bool manage_memory)
 	this->value_array = NULL;
 }
 
-void tear_down(const char *key UNUSED, void *data, void *privdata UNUSED)
+void tear_down(const char *key, void *data, void *privdata)
 {
-	free(data);
+	WTDictionary *dict = static_cast<WTDictionary *>(privdata);
+	bool special = false;
+	for(unsigned int i = 0; i < dict->special_keys.size(); i++)
+	{
+		if(strcasecmp(dict->special_keys.at(i), key) == 0)
+		{
+			special = true;
+			break;
+		}
+	}
+	
+	if(dict->manager && !special)
+		free(data);
+	else if(!dict->manager && special)
+		free(data);
 }
 
 libAPI WTDictionary::~WTDictionary()
@@ -50,7 +64,7 @@ libAPI WTDictionary::~WTDictionary()
 libAPI void WTDictionary::clear(void)
 {
 	mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
-	mowgli_patricia_destroy(this->dict, (manager ? tear_down : NULL), NULL);
+	mowgli_patricia_destroy(this->dict, tear_down, this);
 	this->_count = 0;
 	keys.clear();
 	values.clear();
@@ -59,12 +73,36 @@ libAPI void WTDictionary::clear(void)
 	mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 }
 
-libAPI void WTDictionary::set(const char *key, const void *value)
+libAPI void WTDictionary::set(const char *key, const void *value, WTDictionaryMemoryPolicy managed)
 {
 	const void *old_value;
+	bool old_special = false, new_special = false;
+	vector<const char *>::iterator special_iter;
 	
 	if(key == NULL)
 		return;
+	
+	for(vector<const char *>::iterator iter = special_keys.begin();
+	    iter != special_keys.end();
+	    iter++)
+	{
+		const char *val = *iter;
+		if(strcasecmp(val, key) == 0)
+		{
+			old_special = true;
+			special_iter = iter;
+			break;
+		}
+	}
+	
+	if(manager)
+	{
+		if(managed == WTDICT_KEY_UNMANAGED)
+			new_special = true;
+	} else {
+		if(managed == WTDICT_KEY_MANAGED)
+			new_special = true;
+	}
 	
 	if((old_value = get(key)) == NULL)
 	{
@@ -76,6 +114,8 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 		mowgli_patricia_add(this->dict, key, const_cast<void *>(value));
 		++(this->_count);
 		this->vectors_valid = false;
+		if(!old_special && new_special) special_keys.push_back(key);
+		else if(old_special && !new_special) special_keys.erase(special_iter);
 		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 		return;
 	}
@@ -91,8 +131,10 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 		   (if applicable).  But it MUST be locked, because otherwise
 		   Very Bad Things happen. */
 		mtex_do_or_die(mowgli_mutex_lock(&(this->access_mutex)));
-		if(manager)
+		if(manager && !old_special)
 		{
+			free(mowgli_patricia_retrieve(this->dict, key));
+		} else if(!manager && old_special) {
 			free(mowgli_patricia_retrieve(this->dict, key));
 		};
 		mowgli_patricia_delete(this->dict, key);
@@ -103,6 +145,11 @@ libAPI void WTDictionary::set(const char *key, const void *value)
 			++(this->_count);
 		};
 		this->vectors_valid = false;
+		if(old_special != new_special)
+		{
+			if(old_special) special_keys.erase(special_iter);
+			else special_keys.push_back(key);
+		}
 		mtex_do_or_die(mowgli_mutex_unlock(&(this->access_mutex)));
 		
 		return;

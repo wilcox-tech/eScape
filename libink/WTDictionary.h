@@ -21,6 +21,16 @@
 
 using std::vector;
 
+enum WTDictionaryMemoryPolicy
+{
+	/*! Manage this key's memory. */
+	WTDICT_KEY_MANAGED,
+	/*! Do not manage this key's memory. */
+	WTDICT_KEY_UNMANAGED,
+	/*! Honour the dictionary's policy. */
+	WTDICT_KEY_DEFAULT
+};
+
 /*!
 	@brief		sized buffer
 	@details	a buffer with its current size
@@ -75,12 +85,15 @@ public:
 	@brief		Set the value of a specified key.
 	@param		key		The key to set the value for.
 	@param		data		The new value of the key.
+	@param		managed		The management policy of this key, if
+					different from the dictionary's policy.
 	@details	This method sets the value of the key specified to the
 			value specified in data.  If the key already existed,
 			the old value is discarded (and free()d if the memory
 			management flag is set).
 	 */
-	libAPI void set(const char *key, const void *data);
+	libAPI void set(const char *key, const void *data,
+			WTDictionaryMemoryPolicy managed = WTDICT_KEY_DEFAULT);
 	
 	/*!
 	@brief		Remove all keys from the dictionary.
@@ -137,12 +150,14 @@ protected:
 	bool vectors_valid;
 	mowgli_patricia_t *dict;
 	vector<const char *> keys;
+	vector<const char *> special_keys;
 	vector<const void *> values;
 	const char **key_array;
 	const void **value_array;
 	
 	mowgli_mutex_t access_mutex;
 	friend int fill_my_vector(const char *,void*,void*);
+	friend void tear_down(const char *, void *, void *);
 	
 	void reloadVectors();
 };
