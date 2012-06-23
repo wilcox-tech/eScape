@@ -318,7 +318,7 @@ libAPI void *WTMIMEEncoder::encode_multiple_to_url(vector<WTMIMEAttachment *>att
 	// Set it to something witty and NetBSD-like if we don't have one
 	if(host == NULL) host = strdup("amnesiac");
 	
-	asprintf(&boundary, "%llu,%u,%lu@%s",
+	asprintf(&boundary, "%llu.%u.%lu@%s",
 		 ++curr_message, getpid(), time(NULL), host);
 	
 	free(host);

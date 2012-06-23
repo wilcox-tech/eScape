@@ -51,7 +51,7 @@ struct WTMIMEAttachment
 	
 	/*! Extra fields for content-disposition header
 	    (optional; default: NULL) */
-	char *extra_disposition;
+	const char *extra_disposition;
 	
 	/*! The filename of the attachment
 	    (optional; default: "Attachment [n]") */
