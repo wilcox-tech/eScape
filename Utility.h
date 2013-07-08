@@ -41,7 +41,7 @@
 #	define libAPI
 #endif
 
-#if defined(__MWERKS__)
+#if defined(__MWERKS__) || defined(_AIX)
 #include <stdarg.h>
 static int asprintf(char **strp, const char *fmt, ...)
 {
