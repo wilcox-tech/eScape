@@ -26,10 +26,12 @@
 
 void amy_ssl_lockback(int mode, int n, const char *file, int line)
 {
+#ifndef NO_SSL
 	if(mode & CRYPTO_LOCK)
 		mowgli_mutex_lock(&(ssl_lock_group[n]));
 	else
 		mowgli_mutex_unlock(&(ssl_lock_group[n]));
+#endif
 }
 	
 libAPI void amy_init()
