@@ -15,8 +15,9 @@
 #ifndef NO_SSL
 #	include <openssl/ssl.h>
 #	include <openssl/err.h>
-#	include <libmowgli/mowgli.h>
 #endif /*!NO_SSL*/
+
+#include <libmowgli/mowgli.h>
 
 #ifndef NO_THREADSAFE
 	static mowgli_mutex_t *ssl_lock_group;

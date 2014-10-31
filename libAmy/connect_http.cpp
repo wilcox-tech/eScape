@@ -34,7 +34,9 @@ last_error = strerror(errno);
 extern "C"
 {
 	bool sendall(int sock, const char *buf, size_t *len);
+#ifndef NO_SSL
 	bool sendall_ssl(BIO *sock, const char *buf, size_t *len);
+#endif
 };
 
 void parse_http_headers(const char *http_response,
@@ -261,7 +263,7 @@ bool WTConnection::connect_https(void)
 	
 	return true;
 #else
-	fprintf(stderr, "SSL/TLS disabled.  Can't connect to %s.\n", url);
+	fprintf(stderr, "SSL/TLS disabled.  Can't connect to %s.\n", uri);
 	free(this->uri); this->uri = NULL;
 	free(this->domain); this->domain = NULL;
 	free(this->protocol); this->protocol = NULL;
