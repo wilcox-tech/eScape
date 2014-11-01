@@ -201,7 +201,11 @@ bool WTConnection::connect(const char *url)
 {
 	int addr_result;
 	struct addrinfo hint;
+#ifdef _WIN32
+	DWORD timeout_msec;
+#else
 	struct timeval tv;
+#endif
 	char ports[6];
 	
 	if(this->connecting)
@@ -258,12 +262,19 @@ bool WTConnection::connect(const char *url)
 	this->socket = ::socket(this->addr_info->ai_family,
 				this->addr_info->ai_socktype,
 				this->addr_info->ai_protocol);
-	
+
+#ifdef _WIN32
+	timeout_msec = 30;
+
+	if(::setsockopt(this->socket, SOL_SOCKET, SO_RCVTIMEO,
+			reinterpret_cast<char *>(&timeout_msec), sizeof(DWORD)) == -1)
+#else
 	tv.tv_sec = 30;
 	tv.tv_usec = 0;
 	
 	if(::setsockopt(this->socket, SOL_SOCKET, SO_RCVTIMEO,
 			reinterpret_cast<char *>(&tv), sizeof(tv)) == -1)
+#endif
 	{
 		warning_error("couldn't set recv timeout -- expect delays");
 	}
