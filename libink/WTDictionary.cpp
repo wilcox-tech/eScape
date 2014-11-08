@@ -284,3 +284,10 @@ libAPI WTSizedBuffer *WTDictionary::all(const char *fmt)
 	return all_buffer;
 }
 
+libAPI void WTSizedBufferFree(WTSizedBuffer *buff)
+{
+	free(buff->buffer);
+	free(buff);
+	return;
+}
+

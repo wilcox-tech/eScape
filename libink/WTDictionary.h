@@ -162,4 +162,16 @@ protected:
 	void reloadVectors();
 };
 
+/*!
+	@brief		Frees a WTSizedBuffer allocated by libink.
+	@param		buff		The buffer to free.
+	@result		The buffer and all memory associated with it is
+			deallocated.
+	@warning	Only use this with WTSizedBuffer objects created by
+			libink.  Objects created by other libraries may use
+			a different memory layout.  Always use the deallocator
+			provided by the library that allocated it.
+ */
+void WTSizedBufferFree(WTSizedBuffer *buff);
+
 #endif/*!__LIBINK_WTDICTIONARY_H__*/

@@ -333,8 +333,7 @@ void *WTConnection::download_http(uint64_t *length)
 		alloc_error("request buffer", size_of_req);
 	
 	req_sent = snprintf(request, size_of_req, "GET %s HTTP/1.1%s\r\n\r\n", this->uri, header_str);
-	free(header_str);
-	free(header_buff);
+	WTSizedBufferFree(header_buff);
 	
 	delegate_status(WTHTTP_Transferring);
 #ifndef NO_SSL
@@ -497,9 +496,8 @@ void *WTConnection::upload_internal_http(const char *verb, const void *data, uin
 		 "%s %s HTTP/1.1%s\r\nContent-Length: %s\r\n\r\n",
 		 verb, this->uri, header_str, str_size_of_data);
 		
-	free(header_str);
-	free(header_buff);
-	
+	WTSizedBufferFree(header_buff);
+
 	delegate_status(WTHTTP_Transferring);
 	
 #ifndef NO_SSL
